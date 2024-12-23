@@ -91,7 +91,17 @@ function checkBGImage() {
         button.style.backgroundImage = 'url(https://listium-res.cloudinary.com/image/upload/w_800,h_800,c_limit,q_auto,f_auto/ofn7qgfx0mbcijqinipi.png)'
     }
     
-    
+     if (score > 10000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/csYLupfS46k/maxresdefault.jpg)'
+    }
+  
+
+if (score > 100000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/tCIQ4KdGbq4/maxresdefault.jpg)'
+    }
+
+
+
   
 }
 
