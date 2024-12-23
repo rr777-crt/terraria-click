@@ -42,7 +42,7 @@ main {
 #button {
     width: 250px;
     height:  250px;
-    border-radius: 91%;
+    border-radius: 95%;
     background-image: url(https://steamuserimages-a.akamaihd.net/ugc/1815517933633865406/EAC4F68EE2A581EFA95C6118616DF0712247127C/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false);
     background-position: center;
     background-size: 82%;
@@ -55,8 +55,8 @@ main {
 }
 
 #button:active {
-    filter: hue-rotate(49deg);
-    transform: translateY(-7px);
+    filter: hue-rotate(4deg);
+    transform: translateY(-3px);
     
 }
 
