@@ -39,17 +39,21 @@ function getClick() {
     getScore(addPerClick)
     getSuns(addSuns)
 
-    checkBGImage()
-    if (isLoadingReady && score>= 100000) {
-     isLoadingReady = false
-     MUSIC['1NF3S+!+!0N.mp3'].play()
-    }
+
 
    checkBGImage()
     if (isLoadingReady && score>= 1000) {
      isLoadingReady = false
      MUSIC['It Sees Everything.mp3'].play()
     }
+  
+    checkBGImage()
+    if (isLoadingReady && score>= 100000) {
+     isLoadingReady = false
+     MUSIC['1NF3S+!+!0N.mp3'].play()
+    }
+
+
 }
 
 function getScore(n) {
