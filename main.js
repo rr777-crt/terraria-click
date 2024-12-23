@@ -9,7 +9,7 @@ console.log('v', '001')
 
 const musicList = [
   '1NF3S+!+!0N.mp3',
- 
+ 'It Sees Everything.mp3',
 ]
 const MUSIC = {}
 let loadCount = 5
@@ -40,9 +40,15 @@ function getClick() {
     getSuns(addSuns)
 
     checkBGImage()
-    if (isLoadingReady && score>= 500) {
+    if (isLoadingReady && score>= 100000) {
      isLoadingReady = false
      MUSIC['1NF3S+!+!0N.mp3'].play()
+    }
+
+   checkBGImage()
+    if (isLoadingReady && score>= 1000) {
+     isLoadingReady = false
+     MUSIC['It Sees Everything.mp3'].play()
     }
 }
 
