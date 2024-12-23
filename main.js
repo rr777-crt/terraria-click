@@ -8,7 +8,7 @@ let isLoadingReady = false
 console.log('v', '001')
 
 const musicList = [
-  'Grasswalk.mp3',
+  '1NF3S+!+!0N.mp3',
  
 ]
 const MUSIC = {}
@@ -42,7 +42,7 @@ function getClick() {
     checkBGImage()
     if (isLoadingReady && score>= 500) {
      isLoadingReady = false
-     MUSIC['Grasswalk.mp3'].play()
+     MUSIC['1NF3S+!+!0N.mp3'].play()
     }
 }
 
@@ -97,7 +97,7 @@ function checkBGImage() {
   
 
 if (score > 100000) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/tCIQ4KdGbq4/maxresdefault.jpg)'
+        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/927059243556337620/D522D7C9D612785B26EDD56D6F837E59B2742B81/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false)'
     }
 
 
