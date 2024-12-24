@@ -9,7 +9,7 @@ console.log('v', '001')
 
 const musicList = [
   '1NF3S+!+!0N.mp3',
- 'It Sees Everything.mp3',
+
 ]
 const MUSIC = {}
 let loadCount = 5
@@ -39,13 +39,6 @@ function getClick() {
     getScore(addPerClick)
     getSuns(addSuns)
 
-
-
-   checkBGImage()
-    if (isLoadingReady && score>= 1000) {
-     isLoadingReady = false
-     MUSIC['It Sees Everything.mp3'].play()
-    }
   
     checkBGImage()
     if (isLoadingReady && score>= 100000) {
@@ -108,6 +101,30 @@ function checkBGImage() {
 
 if (score > 100000) {
         button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/927059243556337620/D522D7C9D612785B26EDD56D6F837E59B2742B81/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false)'
+    }
+
+  if (score > 1000000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/hPNM5CIa9Ew/maxresdefault.jpg)'
+    }
+
+  if (score > 1000000000) {
+        button.style.backgroundImage = 'url(https://4.bp.blogspot.com/-MSnMZF_CJl0/W4Cc0tQ7jZI/AAAAAAAAFWU/Izf2Q6bAgnglVKE8wSFVPhavxTEsIKG6wCK4BGAYYCw/s1600/skeletron.png)'
+    }
+
+  if (score > 10000000000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/a7SpPI12LBE/hqdefault.jpg)'
+    }
+
+  if (score > 1000000000000) {
+        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/1765945166803883734/0F8AFE4EFD9017B8D8E5355A621C62D3BD347008/)'
+    }
+
+  if (score > 1000000000000000) {
+        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/2028339742534314153/C69790E52579280CCA0583F86478B2949C00D391/?imw=512&amp;imh=463&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=true)'
+    }
+
+  if (score > 1000000000000000000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/cGwuOdRQhxU/maxresdefault.jpg)'
     }
 
 
