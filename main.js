@@ -49,14 +49,6 @@ function getClick() {
 
 }
 
-function getClickAddSuns(suns_n, price) {
-    if (score < price) return
-
-    getScore(-price)
-    
-    addPerClick = suns_n
-    addText.innerText = addPerClick
-}
 
 
 function getScore(n) {
