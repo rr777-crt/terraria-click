@@ -73,10 +73,7 @@ footer button {
     border-radius: 52px;
 }
 
-footer button span {
-    display: block;
-    font-size: 30px;
-}
+
 .items1{
      width: 50px;
     height:  50px;
@@ -99,5 +96,15 @@ footer button span {
 }
 
 
+.shop{
+     background-position: left;
+     margin-top:25px
+    border-radius:65px
+    box-shadow:0 0 6px black
+}
 
-
+.shop:active{
+    transform: translateY(-5px);
+}
+.shop:hover{
+    background-color:blue
