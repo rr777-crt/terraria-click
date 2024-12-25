@@ -129,6 +129,37 @@ if (score > 100000) {
         button.style.backgroundImage = 'url(https://i.ytimg.com/vi/cGwuOdRQhxU/maxresdefault.jpg)'
     }
 
+   if (score > 1000000000000000000000) {
+        button.style.backgroundImage = 'url(https://assets.audiomack.com/summoningsalt/e14a0012e69b3356572167f57c30237b7c7f52202045a2aca84275bdeb26a253.jpeg?width=1000&amp;height=1000&amp;max=true)'
+    }
+
+   if (score > 1000000000000000000000000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/D_JOYczZfM8/maxresdefault.jpg)'
+    }
+
+   if (score > 1000000000000000000000000000000) {
+        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/927059243556419745/427D822DAA1E0303E9806EC2782DA7DA96AFA12F/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false)'
+    }
+
+   if (score > 1000000000000000000000000000000000000) {
+        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/9o_CenCwu8M/maxresdefault.jpg)'
+    }
+
+    if (score > 1000000000000000000000000000000000000000000000000) {
+        button.style.backgroundImage = 'url(https://i1.sndcdn.com/artworks-000541577574-5di981-original.jpg)'
+    }
+
+
+    if (score > 1000000000000000000000000000000000000000000000000000000000000) {
+        button.style.backgroundImage = 'url(https://avatars.mds.yandex.net/i?id=6e844f8f56916cd6f1e82e55f6c390b9_sr-9843573-images-thumbs&n=13)'
+    }
+
+
+    if (score > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000) {
+        button.style.backgroundImage = 'url(https://i1.sndcdn.com/artworks-000260598365-kyo9yo-t500x500.jpg)'
+    }
+
+
 
 
   
