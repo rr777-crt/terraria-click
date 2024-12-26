@@ -185,3 +185,10 @@ setInterval( () => {
     getScore(addPerSecond)
     console.log('tick')
 }, 1000)
+const Big = require('big.js');
+
+
+const google = new Big('1e100');
+const largerThanGoogle = google.plus(1);
+
+console.log(largerThanGoogle.toString()); 
