@@ -98,13 +98,14 @@ footer button {
 
 .shop{
      background-position: left;
-     margin-top:100px
-    border-radius:200px
+     margin-top:35px
+    border-radius:90px
     box-shadow:0 0 6px black
 }
 
 .shop:active{
-    transform: translateY(-5px);
+    transform: translateY(-50px);
 }
 .shop:hover{
-    background-color:blue
+    background-color:red
+}
