@@ -186,6 +186,3 @@ setInterval( () => {
     console.log('tick')
 }, 1000)
 
-console.log(largerThanGoogle.toString()); 
-const google = BigInt("10000000000000000000000000000000000000000000000000000000000000e100");
-const biggerThanGoogle =  * BigInt("10000000000000000000000000000000000000000000000000000000000000");
