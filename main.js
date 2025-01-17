@@ -64,7 +64,7 @@ function getSuns(n) {
     suns += n
     sunsDiv.innerText = suns.toFixed(2)
 }
-function getGold(n) {
+function getGold(q) {
     gold += q
     goldDiv.innerText = gold.toFixed(50)
 }
@@ -105,8 +105,8 @@ function getClickAddGold(q, priceGold) {
 function getScoreForGold(score_n, gold_q) {
     if (score < gold_q) return
 
-    getScore(gold_q)
-    getSuns(-score_n)
+    getScore(score_n)
+    getgold(-gold_q)
 }
 function checkBGImage() {
 
