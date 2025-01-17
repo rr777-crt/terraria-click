@@ -65,7 +65,7 @@ function getSuns(n) {
     sunsDiv.innerText = suns.toFixed(2)
 }
 function getGold(n) {
-    suns += n
+    suns += q
     sunsDiv.innerText = suns.toFixed(50)
 }
 function getClickAdd(n, price) {
