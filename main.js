@@ -3,7 +3,7 @@ const scoreText = document.getElementById("score")
 const addText = document.getElementById("add")
 const button = document.getElementById("button")
 const sunsDiv = document.getElementById("suns")
-const sunsDiv = document.getElementById("score_gold")
+const goldDiv = document.getElementById("score_gold")
 
 let isLoadingReady = false
 console.log('v', '001')
