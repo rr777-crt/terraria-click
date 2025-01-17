@@ -105,8 +105,8 @@ function getClickAddGold(q, priceGold) {
 function getScoreForGold(score_n, gold_q) {
     if (score < gold_q) return
 
-    getScore(score_n)
-    getgold(-gold_q)
+    getScore(-gold)
+    getgold(score_n)
 }
 function checkBGImage() {
 
