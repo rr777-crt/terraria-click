@@ -34,6 +34,9 @@ let addPerSecond = 0
 let suns = 0
 let addSuns = 0.01
 
+let gold = 0
+let addGold = 0.0000000000000000000000000000000000000000000000001
+
 button.onclick = getClick
 
 function getClick() {
@@ -60,6 +63,10 @@ function getScore(n) {
 function getSuns(n) {
     suns += n
     sunsDiv.innerText = suns.toFixed(2)
+}
+function getGold(n) {
+    suns += n
+    sunsDiv.innerText = suns.toFixed(50)
 }
 function getClickAdd(n, price) {
     if (score < price) return
