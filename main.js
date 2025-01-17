@@ -102,8 +102,8 @@ function getClickAddGold(q, priceGold) {
     addText.innerText = addPerClick
 }
 
-function getScoreForGold(score_q, gold_q) {
-    if (suns < suns_q) return
+function getScoreForGold(score_n, gold_q) {
+    if (gold < gold_q) return
 
     getScore(score_q)
     getSuns(-score_n)
