@@ -3,6 +3,7 @@ const scoreText = document.getElementById("score")
 const addText = document.getElementById("add")
 const button = document.getElementById("button")
 const sunsDiv = document.getElementById("suns")
+const sunsDiv = document.getElementById("score_gold")
 
 let isLoadingReady = false
 console.log('v', '001')
@@ -85,9 +86,21 @@ function getScoreForSuns(score_n, suns_n) {
     getScore(score_n)
     getSuns(-suns_n)
 }
+function getClickAddGold(q, priceGold) {
+    if (score < priceGold) return
 
+    getScore(-priceGold)
+    
+    addPerClick = q
+    addText.innerText = addPerClick
+}
 
+function getScoreForGold(score_q, gold_q) {
+    if (suns < suns_q) return
 
+    getScore(score_q)
+    getSuns(-score_n)
+}
 function checkBGImage() {
 
    
