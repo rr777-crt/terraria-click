@@ -42,7 +42,7 @@ button.onclick = getClick
 function getClick() {
     getScore(addPerClick)
     getSuns(addSuns)
-
+    getGold(addPerClick)
   
     checkBGImage()
     if (isLoadingReady && score>= 100000) {
@@ -96,7 +96,7 @@ function getScoreForSuns(score_n, suns_n) {
 function getClickAddGold(q, priceGold) {
     if (score < priceGold) return
 
-    getScore(-priceGold)
+    getGold(-priceGold)
     
     addPerClick = q
     addText.innerText = addPerClick
@@ -106,7 +106,7 @@ function getScoreForGold(score_n, gold_q) {
     if (score < gold_q) return
 
     getScore(-score_n)
-    getgold(gold_q)
+    getGold(gold_q)
 }
 function checkBGImage() {
 
