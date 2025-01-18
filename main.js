@@ -42,7 +42,7 @@ button.onclick = getClick
 function getClick() {
     getScore(addPerClick)
     getSuns(addSuns)
-    getGold(addPerClick)
+    getGold(addPerClickGold)
   
     checkBGImage()
     if (isLoadingReady && score>= 100000) {
