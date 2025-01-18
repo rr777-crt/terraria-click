@@ -98,8 +98,8 @@ function getClickAddGold(q, priceGold) {
 
     getGold(-priceGold)
     
-    addPerClick = q
-    addText.innerText = addPerClick
+    addGold = q
+    addText.innerText = addGold
 }
 
 function getScoreForGold(score_n, gold_q) {
