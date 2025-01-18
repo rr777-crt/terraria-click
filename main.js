@@ -66,7 +66,7 @@ function getSuns(n) {
 }
 function getGold(q) {
     gold += q
-    goldDiv.innerText = Gold
+    goldDiv.innerText = gold
 }
 function getClickAdd(n, price) {
     if (score < price) return
