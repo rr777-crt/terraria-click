@@ -3,7 +3,7 @@ const scoreText = document.getElementById("score")
 const addText = document.getElementById("add")
 const button = document.getElementById("button")
 const sunsDiv = document.getElementById("suns")
-const goldDiv = document.getElementById("score_gold")
+const goldDiv = document.getElementById("gold")
 
 let isLoadingReady = false
 console.log('v', '001')
@@ -66,7 +66,7 @@ function getSuns(n) {
 }
 function getGold(q) {
     gold += q
-    goldDiv.innerText = gold.toFixed(50)
+    goldDiv.innerText = gold
 }
 function getClickAdd(n, price) {
     if (score < price) return
