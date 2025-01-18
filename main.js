@@ -35,7 +35,7 @@ let suns = 0
 let addSuns = 0.01
 
 let gold = 0
-let addGold = 0.0000000000000000000000000000000000000000000000001
+let addGold = 1
 
 button.onclick = getClick
 
@@ -105,8 +105,8 @@ function getClickAddGold(q, priceGold) {
 function getScoreForGold(score_n, gold_q) {
     if (score < gold_q) return
 
-    getScore(gold_q)
-    getgold(-score_n)
+    getScore(-score_n)
+    getgold(gold_q)
 }
 function checkBGImage() {
 
