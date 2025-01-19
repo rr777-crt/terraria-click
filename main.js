@@ -45,9 +45,9 @@ function getClick() {
     getGold(addGold)
   
     checkBGImage()
-    if (isLoadingReady && score>= 100000) {
+    if (isLoadingReady && score>= 10) {
      isLoadingReady = false
-     MUSIC['1NF3S+!+!0N.mp3'].play()
+     MUSIC[' Infestation.mp3'].play()
     }
 
 
