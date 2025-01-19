@@ -45,7 +45,7 @@ function getClick() {
     getGold(addGold)
   
     checkBGImage()
-    if (isLoadingReady && score>= 10) {
+    if (isLoadingReady && score>= 10n) {
      isLoadingReady = false
      MUSIC[' Infestation.mp3'].play()
     }
@@ -112,48 +112,48 @@ function checkBGImage() {
 
    
   
-    if (score > 1000) {
+    if (score > 1000n) {
         button.style.backgroundImage = 'url(https://listium-res.cloudinary.com/image/upload/w_800,h_800,c_limit,q_auto,f_auto/ofn7qgfx0mbcijqinipi.png)'
     }
     
-     if (score > 10000) {
+     if (score > 10000n) {
         button.style.backgroundImage = 'url(https://i.ytimg.com/vi/csYLupfS46k/maxresdefault.jpg)'
     }
   
 
-if (score > 100000) {
+if (score > 100000n) {
         button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/927059243556337620/D522D7C9D612785B26EDD56D6F837E59B2742B81/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false)'
     }
 
-  if (score > 1000000) {
+  if (score > 1000000n) {
         button.style.backgroundImage = 'url(https://i.ytimg.com/vi/hPNM5CIa9Ew/maxresdefault.jpg)'
     }
 
-  if (score > 1000000000) {
+  if (score > 1000000000n) {
         button.style.backgroundImage = 'url(https://4.bp.blogspot.com/-MSnMZF_CJl0/W4Cc0tQ7jZI/AAAAAAAAFWU/Izf2Q6bAgnglVKE8wSFVPhavxTEsIKG6wCK4BGAYYCw/s1600/skeletron.png)'
     }
 
-  if (score > 10000000000) {
+  if (score > 10000000000n) {
         button.style.backgroundImage = 'url(https://i.ytimg.com/vi/a7SpPI12LBE/hqdefault.jpg)'
     }
 
-  if (score > 1000000000000) {
+  if (score > 1000000000000n) {
         button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/1765945166803883734/0F8AFE4EFD9017B8D8E5355A621C62D3BD347008/)'
     }
 
-  if (score > 1000000000000000) {
+  if (score > 1000000000000000n) {
         button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/2028339742534314153/C69790E52579280CCA0583F86478B2949C00D391/?imw=512&amp;imh=463&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=true)'
     }
 
-  if (score > 1000000000000000000) {
+  if (score > 1000000000000000000n) {
         button.style.backgroundImage = 'url(https://i.ytimg.com/vi/cGwuOdRQhxU/maxresdefault.jpg)'
     }
 
-   if (score > 1000000000000000000000) {
+   if (score > 1000000000000000000000n) {
         button.style.backgroundImage = 'url(https://assets.audiomack.com/summoningsalt/e14a0012e69b3356572167f57c30237b7c7f52202045a2aca84275bdeb26a253.jpeg?width=1000&amp;height=1000&amp;max=true)'
     }
 
-   if (score > 1000000000000000000000000) {
+   if (score > 1000000000000000000000000n) {
         button.style.backgroundImage = 'url(https://i.ytimg.com/vi/D_JOYczZfM8/maxresdefault.jpg)'
     }
 
