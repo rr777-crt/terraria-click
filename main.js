@@ -35,7 +35,7 @@ let suns = 0
 let addSuns = 0.01
 
 let gold = 0
-let addGold = 1
+let addGold = 0
 
 button.onclick = getClick
 
@@ -102,7 +102,7 @@ function getClickAddGold(q, priceGold) {
     addText.innerText = addGold
 }
 
-function getScoreForGold(score_n, gold_q) {
+function getScoreForGold(gold_q,score_n) {
     if (gold < gold_q) return
 
     getScore(-score_n)
