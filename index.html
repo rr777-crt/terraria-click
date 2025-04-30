@@ -759,32 +759,163 @@ function startWave() {
 }
 
         window.addEventListener('load', initGame);
-        const towerTypes = {
-    // ... предыдущие башни ...
-    toxic: {
-        type: 'toxic',
-        cost: 450,
-        damage: 10,
-        radius: 20,
-        attackSpeed: 0.33,
-        upgraded: false,
-        upgradeCost: 900,
-        upgradedRadius: 70,
-        upgradedAttackSpeed: 0.58
-    },
-    knight: {
-        type: 'knight',
-        cost: 1000,
-        damage1: 2,
-        radius1: 50,
-        attackSpeed1: 2,
-        damage2: 5,
-        radius2: 150,
-        attackSpeed2: 0.67,
-        upgraded: false,
-        upgradeCost: 2500
-    }
-};
+               const towerTypes = {
+            pistol: {
+                type: 'pistol',
+                cost: 50,
+                damage: 1,
+                radius: 100,
+                attackSpeed: 1,
+                upgraded: false,
+                upgradeCost: 150,
+                upgradedDamage: 2,
+                upgradedRadius: 150
+            },
+            swordsman: {
+                type: 'swordsman',
+                cost: 80,
+                damage: 2,
+                radius: 50,
+                attackSpeed: 2,
+                upgraded: false,
+                upgradeCost: 150,
+                upgradedDamage: 3,
+                upgradedAttackSpeed: 3
+            },
+            sniper: {
+                type: 'sniper',
+                cost: 250,
+                damage: 10,
+                radius: 1000,
+                attackSpeed: 0.2,
+                upgraded: false,
+                upgradeCost: 1000,
+                upgradedAttackSpeed: 0.4
+            },
+            toxic: {
+                type: 'toxic',
+                cost: 450,
+                damage: 10,
+                radius: 20,
+                attackSpeed: 0.33,
+                upgraded: false,
+                upgradeCost: 900,
+                upgradedRadius: 70,
+                upgradedAttackSpeed: 0.58
+            },
+            knight: {
+                type: 'knight',
+                cost: 1000,
+                damage1: 2,
+                radius1: 50,
+                attackSpeed1: 2,
+                damage2: 5,
+                radius2: 150,
+                attackSpeed2: 0.67,
+                upgraded: false,
+                upgradeCost: 2500
+            }
+        };
+
+        // Исправленный обработчик клика
+        board.addEventListener('click', (e) => {
+            if(!gameActive) return;
+            if(placingTower) {
+                const rect = board.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Исправленная проверка пути
+                const isPath = [...document.querySelectorAll('.tile.path, .tile.start, .tile.end')]
+                    .some(tile => {
+                        const tileX = parseInt(tile.style.left);
+                        const tileY = parseInt(tile.style.top);
+                        return x >= tileX && x <= tileX + tileSize && 
+                               y >= tileY && y <= tileY + tileSize;
+                    });
+                
+                const isTower = towers.some(tower => {
+                    return Math.sqrt(Math.pow(x - tower.x, 2) + Math.pow(y - tower.y, 2)) < 30;
+                });
+                
+                if(!isPath && !isTower) {
+                    const tower = {
+                        ...towerTypes[placingTower],
+                        x: x,
+                        y: y,
+                        totalDamage: 0,
+                        lastAttack: 0
+                    };
+                    towers.push(tower);
+                    placeTower(tower);
+                    placingTower = false;
+                }
+            }
+        });
+
+        // Удаление дублирующихся функций
+        function placeTower(tower) {
+            const elem = document.createElement('div');
+            elem.className = `tower ${tower.type}`;
+            elem.style.left = tower.x + 'px';
+            elem.style.top = tower.y + 'px';
+            
+            let clickCount = 0;
+            let clickTimer = null;
+            
+            elem.onclick = (e) => {
+                e.stopPropagation();
+                clickCount++;
+                
+                if (clickTimer === null) {
+                    clickTimer = setTimeout(() => {
+                        if (clickCount === 1) {
+                            showUpgradeMenu(tower);
+                        } else if (clickCount === 3) {
+                            removeTower(tower);
+                        }
+                        clickCount = 0;
+                        clickTimer = null;
+                    }, 300);
+                }
+            };
+            
+            const radius = document.createElement('div');
+            radius.className = 'radius';
+            radius.style.width = tower.radius*2 + 'px';
+            radius.style.height = tower.radius*2 + 'px';
+            radius.style.left = tower.x + 'px';
+            radius.style.top = tower.y + 'px';
+            
+            board.appendChild(elem);
+            board.appendChild(radius);
+            tower.elem = elem;
+            tower.radiusElem = radius;
+        }
+
+        // Исправленная инициализация
+        function initGame() {
+            money = 100;
+            currentWave = 1;
+            enemies = [];
+            towers = [];
+            selectedTower = null;
+            waveInProgress = false;
+            gameActive = true;
+            
+            board.innerHTML = '';
+            createBoard();
+            
+            updateMoney();
+            document.getElementById('wave').textContent = currentWave;
+            document.getElementById('gameOver').style.display = 'none';
+            closeUpgradeMenu();
+            
+            gameLoop();
+            startWave();
+        }
+
+        window.addEventListener('load', initGame)
 
 // Модифицированная функция спавна врагов
 function spawnEnemy(type) {
