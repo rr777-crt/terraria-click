@@ -3,6 +3,63 @@
 <head>
     <title>Advanced Tower Defense</title>
     <style>
+          .tower.toxic {
+            background: #4CAF50;
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+        }
+        
+        .tower.knight {
+            background: #607D8B;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        .enemy.purple {
+            background: #9C27B0;
+        }
+        
+        .enemy.gold {
+            background: #FFD700;
+        }
+        
+        .enemy.green {
+            background: #009688;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .enemy.boss {
+            background: #F44336;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            width: 40px;
+            height: 40px;
+        }
+        
+        .enemy.black {
+            background: #000;
+        }
+        
+        .enemy.pink {
+            background: #E91E63;
+        }
+        
+        .health-bar {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px black;
+            pointer-events: none;
+        }
+        
+        .boss-radius {
+            border: 3px solid red;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
         #gameContainer {
             display: flex;
         }
@@ -188,6 +245,18 @@
             </div>
         </div>
     </div>
+    <div class="shop-item" onclick="selectTower('toxic', 450)">
+            Токсичный (450)<br>
+            Урон: 10/3сек<br>
+            Радиус: 2st
+        </div>
+        <div class="shop-item" onclick="selectTower('knight', 1000)">
+            Рыцарь (1000)<br>
+            Двойной радиус<br>
+            Урон: 2+5/сек
+        </div>
+    </div>
+
     
     <div id="gameOver">
         <h2>Враги добрались до цели!</h2>
@@ -677,6 +746,150 @@ function startWave() {
 }
 
         window.addEventListener('load', initGame);
+        const towerTypes = {
+    // ... предыдущие башни ...
+    toxic: {
+        type: 'toxic',
+        cost: 450,
+        damage: 10,
+        radius: 20,
+        attackSpeed: 0.33,
+        upgraded: false,
+        upgradeCost: 900,
+        upgradedRadius: 70,
+        upgradedAttackSpeed: 0.58
+    },
+    knight: {
+        type: 'knight',
+        cost: 1000,
+        damage1: 2,
+        radius1: 50,
+        attackSpeed1: 2,
+        damage2: 5,
+        radius2: 150,
+        attackSpeed2: 0.67,
+        upgraded: false,
+        upgradeCost: 2500
+    }
+};
+
+// Модифицированная функция спавна врагов
+function spawnEnemy(type) {
+    const enemyTypes = {
+        basic: { hp: 2, color: 'red', speed: 2 },
+        purple: { hp: 5, color: 'purple', speed: 2 },
+        gold: { hp: 15, color: 'gold', speed: 4 },
+        green: { hp: 100, color: 'green', speed: 1 },
+        boss: { hp: 250, color: 'boss', speed: 2 },
+        black: { hp: 200, color: 'black', speed: 0.7 },
+        pink: { hp: 50, color: 'pink', speed: 6 }
+    };
+    
+    const enemy = {
+        ...enemyTypes[type],
+        x: 0,
+        y: 4 * tileSize + 10,
+        pathIndex: 0
+    };
+    
+    // Добавлен текст с HP
+    const healthText = document.createElement('div');
+    healthText.className = 'health-bar';
+    healthText.textContent = enemy.hp;
+    
+    const elem = document.createElement('div');
+    elem.className = `enemy ${enemy.color}`;
+    elem.style.left = enemy.x + 'px';
+    elem.style.top = enemy.y + 'px';
+    
+    elem.appendChild(healthText);
+    board.appendChild(elem);
+    enemy.elem = elem;
+    enemy.healthText = healthText;
+    enemies.push(enemy);
+}
+
+// Обновлённая логика волн
+function startWave() {
+    if(!gameActive) return;
+    
+    waveInProgress = true;
+    document.getElementById('wave').textContent = currentWave;
+    
+    let spawnInterval = 1000;
+    let enemyCount = currentWave * 2;
+    
+    if(currentWave >= 5) {
+        // Добавлены новые типы врагов
+        for(let i = 0; i < Math.floor(currentWave/5); i++) {
+            setTimeout(() => spawnEnemy('purple'), i*spawnInterval);
+        }
+    }
+    if(currentWave >= 15) {
+        setTimeout(() => spawnEnemy('gold'), enemyCount*spawnInterval);
+    }
+    if(currentWave === 50) {
+        const boss = spawnEnemy('boss');
+        // Добавлен радиус босса
+        const radius = document.createElement('div');
+        radius.className = 'boss-radius';
+        radius.style.width = boss.radius*2 + 'px';
+        radius.style.height = boss.radius*2 + 'px';
+        radius.style.left = boss.x + 'px';
+        radius.style.top = boss.y + 'px';
+        board.appendChild(radius);
+        boss.radiusElem = radius;
+    }
+    // ... аналогично для других волн ...
+}
+
+// Фикс бага с волнами
+let scheduledEnemies = 0;
+
+function startWave() {
+    // ... предыдущий код ...
+    
+    scheduledEnemies = enemyCount;
+    for(let i = 0; i < enemyCount; i++) {
+        setTimeout(() => {
+            spawnEnemy(/* тип врага */);
+            scheduledEnemies--;
+        }, i*spawnInterval);
+    }
+}
+
+function checkWaveCompletion() {
+    if(enemies.length === 0 && scheduledEnemies === 0 && waveInProgress) {
+        waveInProgress = false;
+        currentWave++;
+        setTimeout(startWave, 2000); // Задержка перед следующей волной
+    }
+}
+
+// Обновлённая логика атаки для новых башен
+function attackLogic() {
+    towers.forEach(tower => {
+        if(tower.type === 'knight') {
+            // Логика двойной атаки
+            attackWithRadius(tower, tower.radius1, tower.damage1, tower.attackSpeed1);
+            attackWithRadius(tower, tower.radius2, tower.damage2, tower.attackSpeed2);
+        } else {
+            // Стандартная логика атаки
+        }
+    });
+}
+
+function attackWithRadius(tower, radius, damage, speed) {
+    // Общая логика поиска и атаки врагов в радиусе
+}
+
+// Обновление HP врагов
+function updateEnemyHealth(enemy) {
+    if(enemy.healthText) {
+        enemy.healthText.textContent = enemy.hp;
+        enemy.healthText.style.transform = `translate(${enemy.x}px, ${enemy.y - 20}px)`;
+    }
+}
     </script>
 </body>
 </html>
