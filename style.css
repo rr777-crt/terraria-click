@@ -1,26 +1,28 @@
 #gameContainer {
     display: flex;
-    gap: 20px;
-    padding: 20px;
 }
 
 #gameBoard {
-    width: 1000px;
-    height: 700px;
-    border: 2px solid #333;
+    width: 1200px;
+    height: 800px;
+    border: 1px solid black;
     position: relative;
-    background: #f0f0f0;
+    background: #eee;
 }
 
 .tile {
     width: 40px;
     height: 40px;
     position: absolute;
-    z-index: 1;
+    box-sizing: border-box;
+}
+
+.grass {
+    background: #8BC34A;
 }
 
 .path {
-    background: #666;
+    background: #795548;
 }
 
 .start {
@@ -28,7 +30,7 @@
 }
 
 .end {
-    background: green;
+    background: red;
 }
 
 .enemy {
@@ -36,16 +38,51 @@
     height: 20px;
     position: absolute;
     border-radius: 50%;
-    z-index: 3;
-    transition: transform 0.2s;
+    transform: translate(-10px, -10px);
 }
 
-.enemy.purple { background: #9C27B0; }
-.enemy.gold { background: #FFD700; }
-.enemy.green { background: #009688; }
-.enemy.boss { background: #F44336; }
-.enemy.black { background: #000; }
-.enemy.pink { background: #E91E63; }
+.enemy.red {
+    background: red;
+}
+
+.enemy.purple {
+    background: purple;
+}
+
+.enemy.gold {
+    background: gold;
+}
+
+.enemy.green {
+    background: green;
+}
+
+.enemy.black {
+    background: black;
+}
+
+.enemy.pink {
+    background: pink;
+}
+
+.enemy.boss {
+    background: #8B0000;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.enemy.slowed {
+    filter: brightness(0.5) hue-rotate(180deg);
+}
+
+.enemy-hp {
+    position: absolute;
+    top: -15px;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: black;
+}
 
 .tower {
     width: 30px;
@@ -53,55 +90,89 @@
     position: absolute;
     cursor: pointer;
     transform: translate(-15px, -15px);
-    z-index: 2;
 }
 
-.tower.pistol { background: blue; border-radius: 50%; }
-.tower.swordsman { background: brown; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-.tower.sniper { background: purple; }
-.tower.toxic { background: #4CAF50; clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); }
-.tower.knight { background: #607D8B; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+.tower.pistol {
+    background: blue;
+    border-radius: 50%;
+}
+
+.tower.swordsman {
+    background: brown;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.tower.sniper {
+    background: purple;
+}
+
+.tower.knight {
+    background: #333;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+}
+
+.tower.freezer {
+    background: #00BFFF;
+    clip-path: polygon(50% 0%, 90% 50%, 50% 100%, 10% 50%);
+}
+
+.tower.chance {
+    background: #FF69B4;
+    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+}
+
+.tower.turret {
+    background: #FF4500;
+    clip-path: polygon(50% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+}
+
+.tower.omega {
+    background: #9400D3;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
 
 .radius {
     position: absolute;
-    border: 1px dashed rgba(0,0,255,0.3);
+    border: 1px dashed rgba(0,0,255,0.5);
     border-radius: 50%;
     pointer-events: none;
     transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    display: none;
+}
+
+.radius.inner {
+    border-color: rgba(255,0,0,0.5);
 }
 
 #shop {
     padding: 20px;
-    background: #ddd;
+    background: #ccc;
     width: 250px;
-    border-radius: 10px;
-}
-
-.shop-item {
-    margin: 10px 0;
-    padding: 15px;
-    background: #4CAF50;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.shop-item:hover {
-    transform: translateY(-2px);
-    background: #45a049;
 }
 
 #upgradeMenu {
     position: fixed;
-    right: 300px;
+    right: 250px;
     top: 20px;
-    background: white;
-    padding: 20px;
+    background: #fff;
+    padding: 15px;
+    border: 2px solid #FFB74D;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     display: none;
     z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.shop-item {
+    margin: 10px 0;
+    padding: 12px;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    cursor: pointer;
+    background: linear-gradient(145deg, #81C784, #66BB6A);
+    color: white;
+    font-weight: bold;
 }
 
 #gameOver {
@@ -113,70 +184,49 @@
     color: white;
     padding: 30px;
     text-align: center;
-    border-radius: 15px;
+    border-radius: 10px;
     display: none;
+    z-index: 2000;
 }
 
-
+#gameOver button {
+    padding: 10px 20px;
+    margin-top: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
 
 .boss-radius {
-    border: 3px solid red;
+    position: absolute;
+    border: 2px solid rgba(139, 0, 0, 0.7);
     border-radius: 50%;
-    position: absolute;
-    transform: translate(-50%, -50%);
-}
-/* Добавить в style.css */
-.wave-indicator {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    display: none;
-}
-.tile.path {
-    background: #666;
-    z-index: 1;
-}
-
-.tile.start {
-    background: gold;
-    z-index: 1;
-}
-
-.tile.end {
-    background: green;
-    z-index: 1;
-}
-
-.tower {
-    z-index: 2;
-}
-
-.enemy {
-    z-index: 3;
-}
-/* Добавить эти стили */
-#gameBoard {
-    position: relative;
-}
-
-.tower {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    transform: translate(-15px, -15px);
-}
-
-.radius {
-    position: absolute;
-    border: 2px dashed rgba(0,0,255,0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
     pointer-events: none;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
 }
 
-/* Остальные стили остаются без изменений */
+#showRadiusBtn {
+    margin-top: 20px;
+    padding: 8px 15px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#moneyDisplay {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+#waveDisplay {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+}
