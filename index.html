@@ -3,6 +3,19 @@
 <head>
     <title>Advanced Tower Defense</title>
     <style>
+         .tile {
+            z-index: 1;
+        }
+        
+        /* Башни должны быть поверх плиток */
+        .tower {
+            z-index: 2;
+        }
+        
+        /* Враги поверх всего */
+        .enemy {
+            z-index: 3;
+        }
           .tower.toxic {
             background: #4CAF50;
             clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
@@ -889,6 +902,89 @@ function updateEnemyHealth(enemy) {
         enemy.healthText.textContent = enemy.hp;
         enemy.healthText.style.transform = `translate(${enemy.x}px, ${enemy.y - 20}px)`;
     }
+}
+        function createBoard() {
+    const path = [
+        {x:0, y:4}, {x:1, y:4}, {x:2, y:4}, {x:3, y:4}, {x:4, y:4}, {x:5, y:4},
+        {x:5, y:5}, {x:5, y:6}, {x:5, y:7}, {x:5, y:8}, {x:5, y:9},
+        {x:6, y:9}, {x:7, y:9}, {x:8, y:9}, {x:9, y:9}, {x:10, y:9},
+        {x:10, y:8}, {x:10, y:7}, {x:10, y:6}, {x:10, y:5},
+        {x:11, y:5}, {x:12, y:5}, {x:13, y:5}, {x:14, y:5}, {x:15, y:5},
+        {x:15, y:6}, {x:15, y:7}, {x:15, y:8}, {x:15, y:9}, {x:15, y:10},
+        {x:16, y:10}, {x:17, y:10}, {x:18, y:10}, {x:19, y:10}, {x:20, y:10},
+        {x:20, y:11}
+    ];
+
+    path.forEach((pos, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${index === 0 ? 'start' : index === path.length-1 ? 'end' : 'path'}`;
+        tile.style.left = pos.x * tileSize + 'px';
+        tile.style.top = pos.y * tileSize + 'px';
+        board.appendChild(tile);
+    });
+
+    endPosition = {
+        x: path[path.length-1].x * tileSize,
+        y: path[path.length-1].y * tileSize
+    };
+}
+
+// Исправленный обработчик клика для башен
+board.addEventListener('click', (e) => {
+    if(!gameActive) return;
+    if(placingTower) {
+        const rect = board.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Обновленная проверка пути
+        const isPath = [...document.querySelectorAll('.tile.path, .tile.start, .tile.end')]
+            .some(tile => {
+                const tileX = parseInt(tile.style.left);
+                const tileY = parseInt(tile.style.top);
+                return x >= tileX && x <= tileX + tileSize && 
+                       y >= tileY && y <= tileY + tileSize;
+            });
+        
+        const isTower = towers.some(tower => {
+            return Math.sqrt(Math.pow(x - tower.x, 2) + Math.pow(y - tower.y, 2) < 30;
+        });
+        
+        if(!isPath && !isTower) {
+            const tower = {
+                ...towerTypes[placingTower],
+                x: x,
+                y: y,
+                totalDamage: 0,
+                lastAttack: 0
+            };
+            towers.push(tower);
+            placeTower(tower);
+            placingTower = false;
+        }
+    }
+});
+
+// Важно добавить вызов createBoard в инициализацию
+function initGame() {
+    money = 100;
+    currentWave = 1;
+    enemies = [];
+    towers = [];
+    selectedTower = null;
+    waveInProgress = false;
+    gameActive = true;
+    
+    board.innerHTML = '';
+    createBoard(); // ← ВОССТАНОВЛЕН ВЫЗОВ СОЗДАНИЯ ПУТИ
+    
+    updateMoney();
+    document.getElementById('wave').textContent = currentWave;
+    document.getElementById('gameOver').style.display = 'none';
+    closeUpgradeMenu();
+    
+    gameLoop();
+    startWave();
 }
     </script>
 </body>
