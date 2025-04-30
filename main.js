@@ -217,3 +217,89 @@ function initGame() {
 }
 
 window.addEventListener('load', initGame);
+function createBoard() {
+    const path = [
+        {x:0, y:4}, {x:1, y:4}, {x:2, y:4}, {x:3, y:4}, {x:4, y:4}, {x:5, y:4},
+        {x:5, y:5}, {x:5, y:6}, {x:5, y:7}, {x:5, y:8}, {x:5, y:9},
+        {x:6, y:9}, {x:7, y:9}, {x:8, y:9}, {x:9, y:9}, {x:10, y:9},
+        {x:10, y:8}, {x:10, y:7}, {x:10, y:6}, {x:10, y:5},
+        {x:11, y:5}, {x:12, y:5}, {x:13, y:5}, {x:14, y:5}, {x:15, y:5},
+        {x:15, y:6}, {x:15, y:7}, {x:15, y:8}, {x:15, y:9}, {x:15, y:10},
+        {x:16, y:10}, {x:17, y:10}, {x:18, y:10}, {x:19, y:10}, {x:20, y:10},
+        {x:20, y:11}
+    ];
+
+    // Очищаем доску перед созданием новых плиток
+    board.innerHTML = '';
+    
+    path.forEach((pos, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${index === 0 ? 'start' : index === path.length-1 ? 'end' : 'path'}`;
+        tile.style.left = pos.x * tileSize + 'px';
+        tile.style.top = pos.y * tileSize + 'px';
+        board.appendChild(tile);
+    });
+
+    // Сохраняем позицию конца пути
+    endPosition = {
+        x: path[path.length-1].x * tileSize,
+        y: path[path.length-1].y * tileSize
+    };
+}
+
+// Исправленный обработчик клика
+board.addEventListener('click', (e) => {
+    if(!gameActive || !placingTower) return;
+    
+    const rect = board.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Проверка нахождения на дорожке
+    const isPath = [...document.querySelectorAll('.tile.path, .tile.start, .tile.end')]
+        .some(tile => {
+            const tileX = parseInt(tile.style.left);
+            const tileY = parseInt(tile.style.top);
+            return x >= tileX && x <= tileX + tileSize && 
+                   y >= tileY && y <= tileY + tileSize;
+        });
+    
+    // Проверка на другие башни
+    const isTower = towers.some(tower => 
+        Math.hypot(x - tower.x, y - tower.y) < 30
+    );
+    
+    if(!isPath && !isTower) {
+        const tower = {
+            ...towerTypes[placingTower],
+            x: x,
+            y: y,
+            lastAttack: 0
+        };
+        towers.push(tower);
+        placeTower(tower);
+        placingTower = false;
+    }
+});
+
+// Убедитесь, что initGame вызывает createBoard
+function initGame() {
+    money = 100;
+    currentWave = 1;
+    enemies = [];
+    towers = [];
+    selectedTower = null;
+    waveInProgress = false;
+    gameActive = true;
+    
+    board.innerHTML = '';
+    createBoard(); // Важно!
+    
+    updateMoney();
+    document.getElementById('wave').textContent = currentWave;
+    document.getElementById('gameOver').style.display = 'none';
+    closeUpgradeMenu();
+    
+    startWave();
+    gameLoop();
+}
