@@ -1,285 +1,682 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>terraria-clicker (обновление)</title>
-        <meta name="description" content="грохострел">
-        <link rel="stylesheet" href="./style.css" type="text/css">
-        <!-- viewport -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    </head>
-    <body>
-        <header>
-            <div>
-                УРОН: <b id="score">0</b>
-            </div>
-            <div>
-                За клик +<b id="add">1</b>
-            </div>
-             <div>
-                ИГРОКОВ: <b id="suns">0</b>
-            </div>
-              <div>
-                ЗОЛОТОГО УРОНА: <b id="score_gold">0</b>
-            </div>
-        </header>
-        <main>
-            <div id="button">
-            </div>
-             <div class = "items1" id="items">
-            </div>
-              
-             
-        </main>
-        <footer>
-            
-                 
-            <button onclick="getClickAdd(2, 100)">
-                <span class = "shop">+2 за клик
-                100 УРОНА </span>
-            </button>
-
-              <button onclick="getClickAdd(3, 225)">
-                <span class = "shop">+3 за клик
-                225 УРОНА </span>
-            </button>
-
-              <button onclick="getClickAdd(5, 750)">
-                <span class = "shop">+5 за клик
-                750 УРОНА </span>
-            </button>
-
-             <button onclick="getClickAdd(10, 2250)">
-                <span class = "shop">+10 за клик
-                2250 УРОНА </span>
-            </button>
-
-              <button onclick="getClickAdd(20, 5450)">
-                <span class = "shop">+20 за клик
-                5450 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(30, 12000)">
-                <span class = "shop">+30 за клик
-                12000 УРОНА </span>
-            </button>
-
-               <button onclick="getClickAdd(50, 50000)">
-                <span class = "shop">+50 за клик
-                50000 УРОНА </span>
-            </button>
-
-             <button onclick="getClickAdd(75, 100000)">
-                <span class = "shop">+75 за клик
-                100000 УРОНА </span>
-            </button>
-
-             <button onclick="getClickAdd(100, 250000)">
-                <span class = "shop">+100 за клик
-                250000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(200, 600000)">
-                <span class = "shop">+200 за клик
-                600000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(500, 2000000)">
-                <span class = "shop">+500 за клик
-                2000000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(1000, 10000000)">
-                <span class = "shop">+1000 за клик
-                10000000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(2500, 25000000)">
-                <span class = "shop">+2500 за клик
-                25000000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(10000, 1000000000)">
-                <span class = "shop">+10000 за клик
-                1000000000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(50000, 60000000000)">
-                <span class = "shop">+10000 за клик
-                60000000000 УРОНА </span>
-            </button>
-
-            <button onclick="getClickAdd(10000000, 10000000000000)">
-                <span class = "shop">+10000000 за клик
-                10000000000000 УРОНА </span>
-            </button>
-
-             <button onclick="getClickAdd(500000000, 2000000000000000000)">
-                <span class = "shop">+500000000 за клик
-               2000000000000000000 Урона
-                </span>
-
-             <button onclick="getClickAdd(100000000000000000, 100000000000000000000000000000000000000)">
-                <span class = "shop">+100000000000000000 за клик
-                100000000000000000000000000000000000000 УРОНА </span>
-            </button>
-
-                  <button onclick="getClickAdd(10000000000000000000,                100000000000000000000000000000000000000000000000000000000000000000000000)">
-                <span class = "shop">+10000000000000000000 за клик
-                100000000000000000000000000000000000000000000000000000000000000000000000 УРОНА </span>
-            </button>
-
-                  <button onclick="getClickAdd(9000000000000000000000000000,                 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000)">
-                <span class = "shop">+9000000000000000000000000000 за клик
-                1000000000000000000000000000000000000000000000000000000000000000000000000000000000000 УРОНА </span>
-            </button>
-
-                  <button onclick="getClickAdd(100000000000000000, 100000000000000000000000000000000000000)">
-                <span class = "shop">+100000000000000000 за клик
-                100000000000000000000000000000000000000 УРОНА </span>
-            </button>
-
-                  <button onclick="getClickAdd(10000000000000000000000000000000000000000000000000000000000000,                 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)">
-                <span class = "shop">+10000000000000000000000000000000000000000000000000000000000000 за клик
-                1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 УРОНА </span>
-            </button>
-
-                 
-            
-            
-    
-            <button onclick="mining(1 , 250)">
-                <span class = "shop">+1 в сек</span>
-                250 УРОНА
-            </button>
-
-             <button onclick="mining(10 , 2250)">
-                <span class = "shop">+10 в сек</span>
-                2250 УРОНА
-            </button>
-
-             <button onclick="mining(100, 21000)">
-                <span class = "shop">+100 в сек</span>
-                21000 УРОНА
-            </button>
-
-            <button onclick="mining(1000, 200000)">
-                <span class = "shop">+1000 в сек</span>
-                200000 УРОНА
-            </button>
-
-            <button onclick="mining(10000, 190000)">
-                <span class = "shop">+10000 в сек</span>
-                1900000 УРОНА
-            </button>
-
-                   <button onclick="mining(100000, 17000000)">
-                <span class = "shop">+100000 в сек</span>
-                17000000 УРОНА
-            </button>
-
-                  <button onclick="mining(1000000, 30000000)">
-                <span class = "shop">+1000000 в сек</span>
-                30000000 УРОНА
-            </button>
-
-
+<head>
+    <title>Advanced Tower Defense</title>
+    <style>
+        #gameContainer {
+            display: flex;
+        }
         
-            <button onclick="getScoreForSuns(120, 1)">
-                <span class = "shop">+ 125 </span>
-                за 1 ИГРОКА
-            </button>
+        #gameBoard {
+            width: 1000px; /* Увеличено для расширенного пути */
+            height: 700px; /* Увеличено для расширенного пути */
+            border: 1px solid black;
+            position: relative;
+            background: #eee;
+        }
+        
+        .tile {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+        }
+        
+        .path {
+            background: #666;
+        }
+        
+        .start {
+            background: gold;
+        }
+        
+        .end {
+            background: green;
+        }
+        
+        .enemy {
+            width: 20px;
+            height: 20px;
+            background: red;
+            position: absolute;
+            border-radius: 50%;
+        }
+        
+        .tower {
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            cursor: pointer;
+            transform: translate(-15px, -15px); /* Центрирование башни */
+        }
+        
+        .tower.pistol {
+            background: blue;
+            border-radius: 50%;
+        }
+        
+        .tower.swordsman {
+            background: brown;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        
+        .tower.sniper {
+            background: purple;
+        }
+        
+        .radius {
+            position: absolute;
+            border: 1px dashed rgba(0,0,255,0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%); /* Правильное позиционирование */
+            box-sizing: border-box;
+        }
+        
+        #shop {
+            padding: 20px;
+            background: #ccc;
+            width: 250px;
+        }
+        
+        #upgradeMenu {
+            position: fixed;
+            right: 250px;
+            top: 20px;
+            background: #fff;
+            padding: 15px;
+            border: 2px solid #FFB74D;
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .shop-item {
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(145deg, #81C784, #66BB6A);
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
 
-            <button onclick="getScoreForSuns(300, 2)">
-                <span class = "shop">+ 300 </span>
-                за 2 ИГРОКА
-            </button>
+        .shop-item:hover {
+            background: linear-gradient(145deg, #66BB6A, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
 
-                <button onclick="getScoreForSuns(1200, 5)">
-                <span class = "shop">+ 1200 </span>
-                за 5 ИГРОКА
-            </button>
+        #upgradeMenu button {
+            margin: 8px 0;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(145deg, #FFA726, #FB8C00);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
 
-             <button onclick="getScoreForSuns(5000, 10)">
-                <span class = "shop">+ 5000 </span>
-                за 10 ИГРОКА
-            </button>
-
-             <button onclick="getScoreForSuns(20000, 20)">
-                <span class = "shop">+ 20000 </span>
-                за 20 ИГРОКА
-            </button>
-
-             <button onclick="getScoreForSuns(100000, 50)">
-                <span class = "shop">+ 100000 </span>
-                за 50 ИГРОКА
-            </button>
-
-                    <button onclick="getScoreForSuns(1000000, 100)">
-                <span class = "shop">+ 1000000 </span>
-                за 100 ИГРОКА
-            </button>
-
-                    <button onclick="getScoreForSuns(10000000, 250)">
-                <span class = "shop">+ 10000000 </span>
-                за 250 ИГРОКА
-            </button>
-
-                   <button onclick="getScoreForSuns(50000000, 500)">
-                <span class = "shop">+ 50000000 </span>
-                за 500 ИГРОКА
-            </button>
-
-                   <button onclick="getScoreForSuns(200000000, 1000)">
-                <span class = "shop">+ 200000000 </span>
-                за 1000 ИГРОКА
-            </button>
-
-                   <button onclick="getScoreForSuns(100000000000000000, 2000)">
-                <span class = "shop">+ 100000000000000000 </span>
-                за 2000 ИГРОКА
-            </button>
-
-
-
-<button onclick=" getScoreForGold(1, 2)">
-                <span>+ gold </span>
-                
-            </button>
-          
-<button onclick=" getClickAddGold
-(2, 1)">
-                <span>+ gold </span>
-                
-            </button>
-               
-
-           
-
-                
-               
-
-                 
-              </p>
-            
-    <p>V:ALPHA 1.0.0.26</p>
-        <p> -  10 УЛУТШЕНИЙ НООВЫЫХ!!!!!</p>
-        <p> -  4 НОВЫХ БОССОВ!!!!!!</p>
-        <p> -   ИЗМЕНЕНИя!!!!!! </p>
-        <p> -  ???
-        </p>
-
-       <h1 class ="gg">ИНФО ЛИСТ</h1>
-<p>ЭТО НЕ ПРОСТО ТЕРРАРИЯ А КАЛАМИТИ</p></p>
-            <p>сдесь есть СЕКРЕТ</p>
-            <p></p>
-             <p>
-
-
-
-               
-            
-        </footer>
-    </body>
+        #upgradeMenu button:hover {
+            background: linear-gradient(145deg, #FB8C00, #F57C00);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        #gameOver {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            display: none;
+            z-index: 2000;
+        }
+        
+        #gameOver button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameBoard"></div>
+        <div id="shop">
+            <div class="shop-item" onclick="selectTower('pistol', 50)">
+                Пистолет (50)<br>
+                Урон: 1/сек<br>
+                Радиус: 10st
+            </div>
+            <div class="shop-item" onclick="selectTower('swordsman', 80)">
+                Мечник (80)<br>
+                Урон: 2/0.5сек<br>
+                Радиус: 5st
+            </div>
+            <div class="shop-item" onclick="selectTower('sniper', 250)">
+                Снайпер (250)<br>
+                Урон: 10/5сек<br>
+                Радиус: 100st
+            </div>
+            <div id="upgradeMenu">
+                <h4>Улучшение башни</h4>
+                <div id="towerStats"></div>
+                <button onclick="upgradeTower()">Улучшить</button>
+                <button onclick="closeUpgradeMenu()">Закрыть</button>
+            </div>
+            <div style="margin-top: 20px; font-weight: bold;">
+                Деньги: <span id="money">100</span>
+            </div>
+            <div style="font-weight: bold;">
+                Волна: <span id="wave">1</span>
+            </div>
+        </div>
+    </div>
     
-    <script src="./main.js"></script>
-</html> b 
+    <div id="gameOver">
+        <h2>Враги добрались до цели!</h2>
+        <p>Игра окончена</p>
+        <button onclick="restartGame()">Играть снова</button>
+    </div>
+
+    <script>
+        const board = document.getElementById('gameBoard');
+        const tileSize = 40;
+        let placingTower = false;
+        let money = 100;
+        let currentWave = 1;
+        let enemies = [];
+        let towers = [];
+        let selectedTower = null;
+        let waveInProgress = false;
+        let gameActive = true;
+
+        const towerTypes = {
+            pistol: {
+                type: 'pistol',
+                cost: 50,
+                damage: 1,
+                radius: 100,
+                attackSpeed: 1,
+                upgraded: false,
+                upgradeCost: 150,
+                upgradedDamage: 2,
+                upgradedRadius: 150
+            },
+            swordsman: {
+                type: 'swordsman',
+                cost: 80,
+                damage: 2,
+                radius: 50,
+                attackSpeed: 2,
+                upgraded: false,
+                upgradeCost: 150,
+                upgradedDamage: 3,
+                upgradedAttackSpeed: 3
+            },
+            sniper: {
+                type: 'sniper',
+                cost: 250,
+                damage: 10,
+                radius: 1000,
+                attackSpeed: 0.2,
+                upgraded: false,
+                upgradeCost: 1000,
+                upgradedAttackSpeed: 0.4
+            }
+        };
+
+        function createBoard() {
+            // Расширенный путь с изгибами
+            const path = [
+                {x:0, y:4}, {x:1, y:4}, {x:2, y:4}, {x:3, y:4}, {x:4, y:4}, {x:5, y:4},
+                {x:5, y:5}, {x:5, y:6}, {x:5, y:7}, {x:5, y:8}, {x:5, y:9},
+                {x:6, y:9}, {x:7, y:9}, {x:8, y:9}, {x:9, y:9}, {x:10, y:9},
+                {x:10, y:8}, {x:10, y:7}, {x:10, y:6}, {x:10, y:5},
+                {x:11, y:5}, {x:12, y:5}, {x:13, y:5}, {x:14, y:5}, {x:15, y:5},
+                {x:15, y:6}, {x:15, y:7}, {x:15, y:8}, {x:15, y:9}, {x:15, y:10},
+                {x:16, y:10}, {x:17, y:10}, {x:18, y:10}, {x:19, y:10}, {x:20, y:10},
+                {x:20, y:11}
+            ];
+            
+            // Создаем дорожку
+            path.forEach((pos, index) => {
+                const tile = document.createElement('div');
+                tile.className = `tile ${index === 0 ? 'start' : index === path.length-1 ? 'end' : 'path'}`;
+                tile.style.left = pos.x * tileSize + 'px';
+                tile.style.top = pos.y * tileSize + 'px';
+                board.appendChild(tile);
+            });
+            
+            // Запоминаем позицию конечной точки
+            endPosition = {
+                x: path[path.length-1].x * tileSize,
+                y: path[path.length-1].y * tileSize
+            };
+        }
+
+        function selectTower(type, cost) {
+            if(!gameActive) return;
+            if(money >= cost && !placingTower) {
+                placingTower = type;
+                money -= cost;
+                updateMoney();
+            }
+        }
+
+        board.addEventListener('click', (e) => {
+            if(!gameActive) return;
+            if(placingTower) {
+                const rect = board.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Проверка на дорожку
+                const isPath = [...document.querySelectorAll('.tile')].some(tile => {
+                    const tileX = parseInt(tile.style.left);
+                    const tileY = parseInt(tile.style.top);
+                    return x >= tileX && x <= tileX + tileSize && 
+                           y >= tileY && y <= tileY + tileSize;
+                });
+                
+                // Проверка на другие башни
+                const isTower = towers.some(tower => {
+                    return Math.sqrt(Math.pow(x - tower.x, 2) + Math.pow(y - tower.y, 2)) < 30;
+                });
+                
+                if(!isPath && !isTower) {
+                    const tower = {
+                        ...towerTypes[placingTower],
+                        x: x,
+                        y: y,
+                        totalDamage: 0,
+                        lastAttack: 0
+                    };
+                    towers.push(tower);
+                    placeTower(tower);
+                    placingTower = false;
+                }
+            }
+        });
+
+        function placeTower(tower) {
+            const elem = document.createElement('div');
+            elem.className = `tower ${tower.type}`;
+            elem.style.left = tower.x + 'px';
+            elem.style.top = tower.y + 'px';
+            elem.onclick = () => showUpgradeMenu(tower);
+            
+            const radius = document.createElement('div');
+            radius.className = 'radius';
+            radius.style.width = tower.radius*2 + 'px';
+            radius.style.height = tower.radius*2 + 'px';
+            radius.style.left = tower.x + 'px';
+            radius.style.top = tower.y + 'px';
+            
+            board.appendChild(elem);
+            board.appendChild(radius);
+            tower.elem = elem;
+            tower.radiusElem = radius;
+        }
+
+        function spawnEnemy(hp) {
+            const enemy = {
+                x: 0,
+                y: 4 * tileSize + 10,
+                hp: hp,
+                pathIndex: 0
+            };
+            enemies.push(enemy);
+            
+            const elem = document.createElement('div');
+            elem.className = 'enemy';
+            elem.style.left = enemy.x + 'px';
+            elem.style.top = enemy.y + 'px';
+            board.appendChild(elem);
+            enemy.elem = elem;
+        }
+
+        function gameLoop() {
+            if(!gameActive) return;
+            
+            // Проверяем, достиг ли кто-то конца
+            enemies.forEach((enemy, index) => {
+                const path = document.querySelectorAll('.tile');
+                if(enemy.pathIndex >= path.length - 1) {
+                    // Враг достиг конца
+                    enemy.elem.remove();
+                    enemies.splice(index, 1);
+                    endGame();
+                    return;
+                }
+                
+                const target = path[enemy.pathIndex + 1];
+                if(target) {
+                    const targetX = parseInt(target.style.left) + tileSize/2;
+                    const targetY = parseInt(target.style.top) + tileSize/2;
+                    
+                    const dx = targetX - enemy.x;
+                    const dy = targetY - enemy.y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if(distance < 2) {
+                        enemy.pathIndex++;
+                    } else {
+                        const speed = 2;
+                        enemy.x += (dx / distance) * speed;
+                        enemy.y += (dy / distance) * speed;
+                    }
+                    
+                    enemy.elem.style.left = enemy.x + 'px';
+                    enemy.elem.style.top = enemy.y + 'px';
+                }
+            });
+            
+            attackLogic();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function attackLogic() {
+            towers.forEach(tower => {
+                // Находим ближайшего врага в радиусе
+                let closestEnemy = null;
+                let minDistance = Infinity;
+                
+                enemies.forEach(enemy => {
+                    const dx = enemy.x - tower.x;
+                    const dy = enemy.y - tower.y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if(distance < tower.radius && distance < minDistance) {
+                        closestEnemy = enemy;
+                        minDistance = distance;
+                    }
+                });
+                
+                // Атакуем ближайшего врага
+                if(closestEnemy && Date.now() - tower.lastAttack > 1000/tower.attackSpeed) {
+                    closestEnemy.hp -= tower.damage;
+                    tower.totalDamage += tower.damage;
+                    tower.lastAttack = Date.now();
+                    
+                    if(closestEnemy.hp <= 0) {
+                        closestEnemy.elem.remove();
+                        enemies.splice(enemies.indexOf(closestEnemy), 1);
+                        money += 10;
+                        updateMoney();
+                    }
+                }
+            });
+            
+            checkWaveCompletion();
+        }
+
+        function checkWaveCompletion() {
+            if(enemies.length === 0 && waveInProgress) {
+                waveInProgress = false;
+                currentWave++;
+                startWave();
+            }
+        }
+
+        function startWave() {
+            if(!gameActive) return;
+            
+            waveInProgress = true;
+            document.getElementById('wave').textContent = currentWave;
+            
+            if(currentWave === 1) {
+                for(let i = 0; i < 3; i++) {
+                    setTimeout(() => spawnEnemy(2), i*2000);
+                }
+            } else if(currentWave === 2) {
+                for(let i = 0; i < 5; i++) {
+                    setTimeout(() => spawnEnemy(2), i*2000);
+                }
+            } else if(currentWave === 3) {
+                for(let i = 0; i < 10; i++) {
+                    setTimeout(() => spawnEnemy(2), i*1500);
+                }
+            } else if(currentWave === 4) {
+                for(let i = 0; i < 15; i++) {
+                    setTimeout(() => spawnEnemy(2), i*1000);
+                }
+            } else if(currentWave === 5) {
+                for(let i = 0; i < 5; i++) {
+                    setTimeout(() => spawnEnemy(2), i*1500);
+                }
+                setTimeout(() => spawnEnemy(5), 5*1500);
+            }
+        }
+
+        function showUpgradeMenu(tower) {
+            if(!gameActive) return;
+            
+            closeUpgradeMenu();
+            selectedTower = tower;
+            const menu = document.getElementById('upgradeMenu');
+            menu.style.display = 'block';
+            
+            let upgradeButton = menu.querySelector('button');
+            upgradeButton.textContent = `Улучшить (${tower.upgradeCost})`;
+            
+            document.getElementById('towerStats').innerHTML = `
+                <strong>${getTowerName(tower.type)}</strong><br>
+                Урон: ${tower.damage}<br>
+                Радиус: ${Math.round(tower.radius/10)}st<br>
+                Скорость: ${(1/tower.attackSpeed).toFixed(1)} атак/сек<br>
+                ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+            `;
+        }
+
+        function getTowerName(type) {
+            switch(type) {
+                case 'pistol': return 'Пистолет';
+                case 'swordsman': return 'Мечник';
+                case 'sniper': return 'Снайпер';
+                default: return 'Башня';
+            }
+        }
+
+        function closeUpgradeMenu() {
+            document.getElementById('upgradeMenu').style.display = 'none';
+            selectedTower = null;
+        }
+
+        function upgradeTower() {
+            if(!selectedTower || !gameActive) return;
+            if(selectedTower.upgraded || money < selectedTower.upgradeCost) return;
+            
+            money -= selectedTower.upgradeCost;
+            updateMoney();
+            selectedTower.upgraded = true;
+            
+            switch(selectedTower.type) {
+                case 'pistol':
+                    selectedTower.damage = selectedTower.upgradedDamage;
+                    selectedTower.radius = selectedTower.upgradedRadius;
+                    break;
+                case 'swordsman':
+                    selectedTower.damage = selectedTower.upgradedDamage;
+                    selectedTower.attackSpeed = selectedTower.upgradedAttackSpeed;
+                    break;
+                case 'sniper':
+                    selectedTower.attackSpeed = selectedTower.upgradedAttackSpeed;
+                    break;
+            }
+            
+            updateTowerVisuals(selectedTower);
+            showUpgradeMenu(selectedTower);
+        }
+
+        function updateTowerVisuals(tower) {
+            if(tower.radiusElem) {
+                tower.radiusElem.style.width = tower.radius*2 + 'px';
+                tower.radiusElem.style.height = tower.radius*2 + 'px';
+            }
+        }
+
+        function updateMoney() {
+            document.getElementById('money').textContent = money;
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        function restartGame() {
+            // Очищаем игровое поле
+            board.innerHTML = '';
+            enemies = [];
+            towers = [];
+            
+            // Сбрасываем параметры
+            money = 100;
+            currentWave = 1;
+            gameActive = true;
+            
+            // Обновляем интерфейс
+            updateMoney();
+            document.getElementById('wave').textContent = currentWave;
+            document.getElementById('gameOver').style.display = 'none';
+            closeUpgradeMenu();
+            
+            // Перезапускаем игру
+            createBoard();
+            startWave();
+            gameLoop();
+        }
+
+        // Инициализация игры
+        function initGame() {
+            money = 100;
+            currentWave = 1;
+            enemies = [];
+            towers = [];
+            selectedTower = null;
+            waveInProgress = false;
+            gameActive = true;
+            
+            board.innerHTML = '';
+            createBoard();
+            
+            updateMoney();
+            document.getElementById('wave').textContent = currentWave;
+            document.getElementById('gameOver').style.display = 'none';
+            closeUpgradeMenu();
+            
+            gameLoop();
+            startWave();
+        }
+      function placeTower(tower) {
+    const elem = document.createElement('div');
+    elem.className = `tower ${tower.type}`;
+    elem.style.left = tower.x + 'px';
+    elem.style.top = tower.y + 'px';
+    
+    let clickCount = 0;
+    let clickTimer = null;
+    
+    elem.onclick = (e) => {
+        e.stopPropagation();
+        clickCount++;
+        
+        if (clickTimer === null) {
+            clickTimer = setTimeout(() => {
+                if (clickCount === 1) {
+                    showUpgradeMenu(tower);
+                } else if (clickCount === 3) {
+                    removeTower(tower);
+                }
+                clickCount = 0;
+                clickTimer = null;
+            }, 300);
+        }
+    };
+    
+    const radius = document.createElement('div');
+    radius.className = 'radius';
+    radius.style.width = tower.radius*2 + 'px';
+    radius.style.height = tower.radius*2 + 'px';
+    radius.style.left = tower.x + 'px';
+    radius.style.top = tower.y + 'px';
+    
+    board.appendChild(elem);
+    board.appendChild(radius);
+    tower.elem = elem;
+    tower.radiusElem = radius;
+}
+
+function removeTower(tower) {
+    if (!gameActive) return;
+    
+    // Возвращаем 50% стоимости башни
+    const refund = Math.floor(towerTypes[tower.type].cost * 0.5);
+    money += refund;
+    updateMoney();
+    
+    // Удаляем элементы из DOM
+    if (tower.elem) tower.elem.remove();
+    if (tower.radiusElem) tower.radiusElem.remove();
+    
+    // Удаляем из массива башен
+    towers = towers.filter(t => t !== tower);
+    
+    // Закрываем меню, если удаляем выбранную башню
+    if (selectedTower === tower) {
+        closeUpgradeMenu();
+    }
+}
+
+// Исправленная функция startWave
+function startWave() {
+    if(!gameActive) return;
+    
+    waveInProgress = true;
+    document.getElementById('wave').textContent = currentWave;
+    
+    if(currentWave === 1) {
+        for(let i = 0; i < 3; i++) {
+            setTimeout(() => spawnEnemy(2), i*2000);
+        }
+    } else if(currentWave === 2) {
+        for(let i = 0; i < 5; i++) {
+            setTimeout(() => spawnEnemy(2), i*2000);
+        }
+    } else if(currentWave === 3) {
+        for(let i = 0; i < 10; i++) {
+            setTimeout(() => spawnEnemy(2), i*1500);
+        }
+    } else if(currentWave === 4) {
+        for(let i = 0; i < 15; i++) {
+            setTimeout(() => spawnEnemy(2), i*1000);
+        }
+    } else if(currentWave === 5) {
+        for(let i = 0; i < 5; i++) {
+            setTimeout(() => spawnEnemy(2), i*1500);
+        }
+        setTimeout(() => spawnEnemy(5), 5*1500);
+    }
+}
+
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
