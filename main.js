@@ -356,3 +356,35 @@ function attackWithRadius(tower, radius, damage, speed) {
         }
     }
 }
+function startWave() {
+    // ... предыдущий код ...
+    
+    // Для первых волн гарантированно добавляем базовых врагов
+    if(currentWave < 5) {
+        for(let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                spawnEnemy('basic');
+                scheduledEnemies--;
+            }, i * 1500);
+        }
+    }
+    // ... остальной код ...
+}
+// Добавить в gameLoop
+function checkWaveCompletion() {
+    if(enemies.length === 0 && scheduledEnemies === 0 && waveInProgress) {
+        showWaveStart();
+        // ... остальной код ...
+    }
+}
+
+function showWaveStart() {
+    const indicator = document.createElement('div');
+    indicator.className = 'wave-indicator';
+    indicator.textContent = `Волна ${currentWave + 1} начинается!`;
+    document.body.appendChild(indicator);
+    
+    setTimeout(() => {
+        indicator.remove();
+    }, 2000);
+}
