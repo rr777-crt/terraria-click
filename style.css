@@ -117,15 +117,7 @@
     display: none;
 }
 
-.health-bar {
-    position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 12px;
-    text-shadow: 1px 1px 2px black;
-}
+
 
 .boss-radius {
     border: 3px solid red;
@@ -144,4 +136,26 @@
     padding: 10px 20px;
     border-radius: 5px;
     display: none;
+}
+.tile.path {
+    background: #666;
+    z-index: 1;
+}
+
+.tile.start {
+    background: gold;
+    z-index: 1;
+}
+
+.tile.end {
+    background: green;
+    z-index: 1;
+}
+
+.tower {
+    z-index: 2;
+}
+
+.enemy {
+    z-index: 3;
 }
