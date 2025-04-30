@@ -50,38 +50,90 @@ board.addEventListener('click', (e) => {
 function placeTower(tower) {
     const elem = document.createElement('div');
     elem.className = `tower ${tower.type}`;
-    elem.style.left = tower.x + 'px';
-    elem.style.top = tower.y + 'px';
+    elem.style.left = `${tower.x}px`;
+    elem.style.top = `${tower.y}px`;
     
-    elem.onclick = (e) => {
-        e.stopPropagation();
-        showUpgradeMenu(tower);
-    };
-    
+    // Создание радиуса
     const radius = document.createElement('div');
     radius.className = 'radius';
-    radius.style.width = tower.radius*2 + 'px';
-    radius.style.height = tower.radius*2 + 'px';
-    radius.style.left = tower.x + 'px';
-    radius.style.top = tower.y + 'px';
-    
+    radius.style.width = `${tower.radius * 2}px`;
+    radius.style.height = `${tower.radius * 2}px`;
+    radius.style.left = `${tower.x}px`;
+    radius.style.top = `${tower.y}px`;
+
+    // Добавление элементов на доску
     board.appendChild(elem);
     board.appendChild(radius);
+    
+    // Сохранение ссылок
     tower.elem = elem;
     tower.radiusElem = radius;
 }
 
+// Исправленная функция startWave
+function startWave() {
+    waveInProgress = true;
+    console.log(`Start wave ${currentWave}`);
+    
+    const waveSettings = {
+        1: { count: 3, type: 'basic', delay: 2000 },
+        2: { count: 5, type: 'basic', delay: 1500 },
+        3: { count: 10, type: 'basic', delay: 1000 },
+        4: { count: 15, type: 'basic', delay: 800 },
+        5: { count: 5, type: 'basic', delay: 1500, boss: true }
+    };
+
+    const settings = waveSettings[currentWave] || { 
+        count: currentWave * 2, 
+        type: 'basic', 
+        delay: 1000 
+    };
+
+    scheduledEnemies = settings.count;
+    
+    for(let i = 0; i < settings.count; i++) {
+        setTimeout(() => {
+            const type = settings.boss && i === settings.count-1 ? 'boss' : settings.type;
+            spawnEnemy(type);
+            scheduledEnemies--;
+            console.log(`Enemy spawned: ${type}`);
+        }, i * settings.delay);
+    }
+}
+
+// Добавить в initGame
+function initGame() {
+    // ... (предыдущий код)
+    
+    // Запуск первой волны сразу
+    setTimeout(() => startWave(), 1000);
+}
+
+// Исправленная функция spawnEnemy
 function spawnEnemy(type) {
     const enemyTypes = {
         basic: { hp: 2, speed: 2, color: 'red' },
-        purple: { hp: 5, speed: 2, color: 'purple' },
-        gold: { hp: 15, speed: 4, color: 'gold' },
-        green: { hp: 100, speed: 1, color: 'green' },
-        boss: { hp: 250, speed: 2, color: 'boss' },
-        black: { hp: 200, speed: 0.7, color: 'black' },
-        pink: { hp: 50, speed: 6, color: 'pink' }
+        boss: { hp: 10, speed: 1, color: 'purple' }
     };
     
+    const enemy = { 
+        ...enemyTypes[type], 
+        x: 0, 
+        y: 4 * tileSize + 10, 
+        pathIndex: 0 
+    };
+    
+    const elem = document.createElement('div');
+    elem.className = `enemy ${enemy.color}`;
+    elem.style.left = `${enemy.x}px`;
+    elem.style.top = `${enemy.y}px`;
+    
+    board.appendChild(elem);
+    enemy.elem = elem;
+    enemies.push(enemy);
+    
+    console.log(`New enemy created at ${enemy.x},${enemy.y}`);
+}
     const enemy = {...enemyTypes[type], x: 0, y: 4*tileSize+10, pathIndex: 0};
     
     const elem = document.createElement('div');
