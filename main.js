@@ -286,3 +286,73 @@ function initGame() {
 }
 
 window.addEventListener('load', initGame);
+function gameLoop() {
+    if(!gameActive) return;
+    
+    enemies.forEach((enemy, index) => {
+        // ... существующий код движения врагов ...
+    });
+    
+    attackLogic();
+    checkWaveCompletion(); // Добавить эту строку
+    requestAnimationFrame(gameLoop);
+}
+
+// Исправить функцию startWave
+function startWave() {
+    waveInProgress = true;
+    document.getElementById('wave').textContent = currentWave;
+    
+    let count = currentWave * 2;
+    scheduledEnemies = count;
+    
+    // Использовать let вместо var для правильной работы замыкания
+    for(let i = 0; i < count; i++) {
+        setTimeout(() => {
+            let type = 'basic';
+            if(currentWave >= 5) type = 'purple';
+            if(currentWave >= 10) type = 'gold';
+            if(currentWave >= 15) type = 'green';
+            spawnEnemy(type);
+            scheduledEnemies--;
+        }, i * 1000);
+    }
+}
+
+// Исправить создание башен (добавить lastAttack)
+function placeTower(tower) {
+    const elem = document.createElement('div');
+    elem.className = `tower ${tower.type}`;
+    elem.style.left = tower.x + 'px';
+    elem.style.top = tower.y + 'px';
+    
+    // Инициализировать lastAttack
+    tower.lastAttack = 0;
+    
+    // ... остальной код создания башни ...
+}
+
+// Исправить функцию attackWithRadius
+function attackWithRadius(tower, radius, damage, speed) {
+    const now = Date.now();
+    if(now - tower.lastAttack < 1000/speed) return;
+    
+    // Найти всех врагов в радиусе
+    const targets = enemies.filter(enemy => 
+        Math.hypot(enemy.x - tower.x, enemy.y - tower.y) < radius
+    );
+    
+    if(targets.length > 0) {
+        const target = targets[0]; // Атаковать первого врага
+        target.hp -= damage;
+        target.health.textContent = target.hp;
+        tower.lastAttack = now;
+        
+        if(target.hp <= 0) {
+            target.elem.remove();
+            enemies = enemies.filter(e => e !== target);
+            money += 10;
+            updateMoney();
+        }
+    }
+}
