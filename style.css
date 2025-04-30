@@ -159,3 +159,24 @@
 .enemy {
     z-index: 3;
 }
+/* Добавить эти стили */
+#gameBoard {
+    position: relative;
+}
+
+.tower {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    transform: translate(-15px, -15px);
+}
+
+.radius {
+    position: absolute;
+    border: 2px dashed rgba(0,0,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* Остальные стили остаются без изменений */
