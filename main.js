@@ -1,208 +1,288 @@
-'use script'
-const scoreText = document.getElementById("score")
-const addText = document.getElementById("add")
-const button = document.getElementById("button")
-const sunsDiv = document.getElementById("suns")
-const goldDiv = document.getElementById("gold")
+const board = document.getElementById('gameBoard');
+const tileSize = 40;
+let placingTower = false;
+let money = 100;
+let currentWave = 1;
+let enemies = [];
+let towers = [];
+let selectedTower = null;
+let waveInProgress = false;
+let gameActive = true;
+let scheduledEnemies = 0;
 
-let isLoadingReady = false
-console.log('v', '001')
-
-const musicList = [
-  ' Infestation.mp3',
-
-]
-const MUSIC = {}
-let loadCount = 5
-musicList.forEach((m, i) => {
-   const music = new Audio()
-   music.src = m
-   MUSIC[m] = music
-   music.oncanplaythrough = (e) => {
-    e.target.oncanplaythrough = null
-    loadCount++
-    if (loadCount === musicList.length) isLoadingReady = true
-     console.log('isLoadingReady', isLoadingReady)
-   }
-})
-
-
-let score = 0
-let addPerClick = 1
-let addPerSecond = 0
-
-let suns = 0
-let addSuns = 0.01
-
-let gold = 0
-let addGold = 0
-
-button.onclick = getClick
-
-function getClick() {
-    getScore(addPerClick)
-    getSuns(addSuns)
-    getGold(addGold)
-  
-    checkBGImage()
-    if (isLoadingReady && score>= 10n) {
-     isLoadingReady = false
-     MUSIC[' Infestation.mp3'].play()
+const towerTypes = {
+    pistol: {
+        type: 'pistol',
+        cost: 50,
+        damage: 1,
+        radius: 100,
+        attackSpeed: 1,
+        upgradeCost: 150,
+        upgradedDamage: 2,
+        upgradedRadius: 150
+    },
+    swordsman: {
+        type: 'swordsman',
+        cost: 80,
+        damage: 2,
+        radius: 50,
+        attackSpeed: 2,
+        upgradeCost: 150,
+        upgradedDamage: 3,
+        upgradedAttackSpeed: 3
+    },
+    sniper: {
+        type: 'sniper',
+        cost: 250,
+        damage: 10,
+        radius: 1000,
+        attackSpeed: 0.2,
+        upgradeCost: 1000,
+        upgradedAttackSpeed: 0.4
+    },
+    toxic: {
+        type: 'toxic',
+        cost: 450,
+        damage: 10,
+        radius: 20,
+        attackSpeed: 0.33,
+        upgradeCost: 900,
+        upgradedRadius: 70,
+        upgradedAttackSpeed: 0.58
+    },
+    knight: {
+        type: 'knight',
+        cost: 1000,
+        damage1: 2,
+        radius1: 50,
+        attackSpeed1: 2,
+        damage2: 5,
+        radius2: 150,
+        attackSpeed2: 0.67,
+        upgradeCost: 2500
     }
+};
 
+function createBoard() {
+    const path = [
+        {x:0, y:4}, {x:1, y:4}, {x:2, y:4}, {x:3, y:4}, {x:4, y:4}, {x:5, y:4},
+        {x:5, y:5}, {x:5, y:6}, {x:5, y:7}, {x:5, y:8}, {x:5, y:9},
+        {x:6, y:9}, {x:7, y:9}, {x:8, y:9}, {x:9, y:9}, {x:10, y:9},
+        {x:10, y:8}, {x:10, y:7}, {x:10, y:6}, {x:10, y:5},
+        {x:11, y:5}, {x:12, y:5}, {x:13, y:5}, {x:14, y:5}, {x:15, y:5},
+        {x:15, y:6}, {x:15, y:7}, {x:15, y:8}, {x:15, y:9}, {x:15, y:10},
+        {x:16, y:10}, {x:17, y:10}, {x:18, y:10}, {x:19, y:10}, {x:20, y:10},
+        {x:20, y:11}
+    ];
 
+    path.forEach((pos, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${index === 0 ? 'start' : index === path.length-1 ? 'end' : 'path'}`;
+        tile.style.left = pos.x * tileSize + 'px';
+        tile.style.top = pos.y * tileSize + 'px';
+        board.appendChild(tile);
+    });
 }
 
-
-
-function getScore(n) {
-    score += n
-    scoreText.innerText = score
+function selectTower(type, cost) {
+    if(!gameActive || money < cost || placingTower) return;
+    placingTower = type;
+    money -= cost;
+    updateMoney();
 }
 
-function getSuns(n) {
-    suns += n
-    sunsDiv.innerText = suns.toFixed(2)
-}
-function getGold(q) {
-    gold += q
-    goldDiv.innerText = gold
-}
-function getClickAdd(n, price) {
-    if (score < price) return
-
-    getScore(-price)
+board.addEventListener('click', (e) => {
+    if(!gameActive || !placingTower) return;
     
-    addPerClick = n
-    addText.innerText = addPerClick
-}
-
-
-function mining(scorePerSec , price) {
-    if (score < price) return
-
-    getScore(-price)
-    addPerSecond += scorePerSec
-
-    console.log(scorePerSec , price, addPerSecond)
-}
- 
-function getScoreForSuns(score_n, suns_n) {
-    if (suns < suns_n) return
-
-    getScore(score_n)
-    getSuns(-suns_n)
-}
-function getClickAddGold(q, priceGold) {
-    if (score < priceGold) return
-
-    getGold(-priceGold)
+    const rect = board.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     
-    addGold = q
-    addText.innerText = addGold
-}
-
-function getScoreForGold(gold_q,score_n) {
-    if (gold < gold_q) return
-
-    getScore(-score_n)
-    getGold(gold_q)
-}
-function checkBGImage() {
-
-   
-  
-    if (score > 1000n) {
-        button.style.backgroundImage = 'url(https://listium-res.cloudinary.com/image/upload/w_800,h_800,c_limit,q_auto,f_auto/ofn7qgfx0mbcijqinipi.png)'
-    }
+    const isPath = [...document.querySelectorAll('.tile')].some(tile => {
+        const tileX = parseInt(tile.style.left);
+        const tileY = parseInt(tile.style.top);
+        return x >= tileX && x <= tileX + tileSize && 
+               y >= tileY && y <= tileY + tileSize;
+    });
     
-     if (score > 10000n) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/csYLupfS46k/maxresdefault.jpg)'
+    const isTower = towers.some(tower => 
+        Math.hypot(x - tower.x, y - tower.y) < 30
+    );
+    
+    if(!isPath && !isTower) {
+        const tower = {...towerTypes[placingTower], x, y};
+        towers.push(tower);
+        placeTower(tower);
+        placingTower = false;
     }
-  
+});
 
-if (score > 100000n) {
-        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/927059243556337620/D522D7C9D612785B26EDD56D6F837E59B2742B81/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false)'
-    }
-
-  if (score > 1000000n) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/hPNM5CIa9Ew/maxresdefault.jpg)'
-    }
-
-  if (score > 1000000000n) {
-        button.style.backgroundImage = 'url(https://4.bp.blogspot.com/-MSnMZF_CJl0/W4Cc0tQ7jZI/AAAAAAAAFWU/Izf2Q6bAgnglVKE8wSFVPhavxTEsIKG6wCK4BGAYYCw/s1600/skeletron.png)'
-    }
-
-  if (score > 10000000000n) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/a7SpPI12LBE/hqdefault.jpg)'
-    }
-
-  if (score > 1000000000000n) {
-        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/1765945166803883734/0F8AFE4EFD9017B8D8E5355A621C62D3BD347008/)'
-    }
-
-  if (score > 1000000000000000n) {
-        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/2028339742534314153/C69790E52579280CCA0583F86478B2949C00D391/?imw=512&amp;imh=463&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=true)'
-    }
-
-  if (score > 1000000000000000000n) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/cGwuOdRQhxU/maxresdefault.jpg)'
-    }
-
-   if (score > 1000000000000000000000n) {
-        button.style.backgroundImage = 'url(https://assets.audiomack.com/summoningsalt/e14a0012e69b3356572167f57c30237b7c7f52202045a2aca84275bdeb26a253.jpeg?width=1000&amp;height=1000&amp;max=true)'
-    }
-
-   if (score > 1000000000000000000000000n) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/D_JOYczZfM8/maxresdefault.jpg)'
-    }
-
-   if (score > 1000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://steamuserimages-a.akamaihd.net/ugc/927059243556419745/427D822DAA1E0303E9806EC2782DA7DA96AFA12F/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false)'
-    }
-
-   if (score > 1000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/9o_CenCwu8M/maxresdefault.jpg)'
-    }
-
-    if (score > 1000000000000000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://i1.sndcdn.com/artworks-000541577574-5di981-original.jpg)'
-    }
-
-
-    if (score > 1000000000000000000000000000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://avatars.mds.yandex.net/i?id=6e844f8f56916cd6f1e82e55f6c390b9_sr-9843573-images-thumbs&n=13)'
-    }
-
-
-    if (score > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://i1.sndcdn.com/artworks-000260598365-kyo9yo-t500x500.jpg)'
-    }
-
-     if (score > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://avatars.mds.yandex.net/i?id=cd88995731f6dae3bf196693a5fa1d885fdbfdde13a7e2d3-12648253-images-thumbs&n=13)'
-    }
-
-     if (score > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/iB0-4PVxVjg/hqdefault.jpg)'
-    }
-
-     if (score > 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000900000000000000000000) {
-        button.style.backgroundImage = 'url(https://avatars.mds.yandex.net/i?id=111c81cba65cdf3ff83562b12f2c03349962a994-9232692-images-thumbs&n=13)'
-    }
-
-     if (score > 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) {
-        button.style.backgroundImage = 'url(https://i.ytimg.com/vi/WNUaOMyXVWE/maxresdefault.jpg)'
-    }
-
-
-
-
-  
+function placeTower(tower) {
+    const elem = document.createElement('div');
+    elem.className = `tower ${tower.type}`;
+    elem.style.left = tower.x + 'px';
+    elem.style.top = tower.y + 'px';
+    
+    elem.onclick = (e) => {
+        e.stopPropagation();
+        showUpgradeMenu(tower);
+    };
+    
+    const radius = document.createElement('div');
+    radius.className = 'radius';
+    radius.style.width = tower.radius*2 + 'px';
+    radius.style.height = tower.radius*2 + 'px';
+    radius.style.left = tower.x + 'px';
+    radius.style.top = tower.y + 'px';
+    
+    board.appendChild(elem);
+    board.appendChild(radius);
+    tower.elem = elem;
+    tower.radiusElem = radius;
 }
 
-setInterval( () => {
-    getScore(addPerSecond)
-    console.log('tick')
-}, 1000)
+function spawnEnemy(type) {
+    const enemyTypes = {
+        basic: { hp: 2, speed: 2, color: 'red' },
+        purple: { hp: 5, speed: 2, color: 'purple' },
+        gold: { hp: 15, speed: 4, color: 'gold' },
+        green: { hp: 100, speed: 1, color: 'green' },
+        boss: { hp: 250, speed: 2, color: 'boss' },
+        black: { hp: 200, speed: 0.7, color: 'black' },
+        pink: { hp: 50, speed: 6, color: 'pink' }
+    };
+    
+    const enemy = {...enemyTypes[type], x: 0, y: 4*tileSize+10, pathIndex: 0};
+    
+    const elem = document.createElement('div');
+    elem.className = `enemy ${enemy.color}`;
+    elem.style.left = enemy.x + 'px';
+    elem.style.top = enemy.y + 'px';
+    
+    const health = document.createElement('div');
+    health.className = 'health-bar';
+    health.textContent = enemy.hp;
+    elem.appendChild(health);
+    
+    board.appendChild(elem);
+    enemy.elem = elem;
+    enemy.health = health;
+    enemies.push(enemy);
+}
 
+function gameLoop() {
+    if(!gameActive) return;
+    
+    enemies.forEach((enemy, index) => {
+        const path = document.querySelectorAll('.tile');
+        if(enemy.pathIndex >= path.length-1) return endGame();
+        
+        const nextTile = path[enemy.pathIndex + 1];
+        const targetX = parseInt(nextTile.style.left) + tileSize/2;
+        const targetY = parseInt(nextTile.style.top) + tileSize/2;
+        
+        const dx = targetX - enemy.x;
+        const dy = targetY - enemy.y;
+        const distance = Math.hypot(dx, dy);
+        
+        if(distance < 2) {
+            enemy.pathIndex++;
+        } else {
+            enemy.x += (dx/distance) * enemy.speed;
+            enemy.y += (dy/distance) * enemy.speed;
+        }
+        
+        enemy.elem.style.left = enemy.x + 'px';
+        enemy.elem.style.top = enemy.y + 'px';
+        enemy.health.style.transform = `translate(${enemy.x}px, ${enemy.y-20}px)`;
+    });
+    
+    attackLogic();
+    requestAnimationFrame(gameLoop);
+}
+
+function attackLogic() {
+    towers.forEach(tower => {
+        if(tower.type === 'knight') {
+            attackWithRadius(tower, tower.radius1, tower.damage1, tower.attackSpeed1);
+            attackWithRadius(tower, tower.radius2, tower.damage2, tower.attackSpeed2);
+        } else {
+            attackWithRadius(tower, tower.radius, tower.damage, tower.attackSpeed);
+        }
+    });
+}
+
+function attackWithRadius(tower, radius, damage, speed) {
+    const now = Date.now();
+    if(now - tower.lastAttack < 1000/speed) return;
+    
+    const target = enemies.find(enemy => 
+        Math.hypot(enemy.x - tower.x, enemy.y - tower.y) < radius
+    );
+    
+    if(target) {
+        target.hp -= damage;
+        target.health.textContent = target.hp;
+        tower.lastAttack = now;
+        
+        if(target.hp <= 0) {
+            target.elem.remove();
+            enemies = enemies.filter(e => e !== target);
+            money += 10;
+            updateMoney();
+        }
+    }
+}
+
+function startWave() {
+    waveInProgress = true;
+    document.getElementById('wave').textContent = currentWave;
+    
+    let count = currentWave * 2;
+    scheduledEnemies = count;
+    
+    for(let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const type = currentWave >= 5 ? 'purple' : 'basic';
+            spawnEnemy(type);
+            scheduledEnemies--;
+        }, i * 1000);
+    }
+}
+
+function checkWaveCompletion() {
+    if(enemies.length === 0 && scheduledEnemies === 0 && waveInProgress) {
+        waveInProgress = false;
+        currentWave++;
+        setTimeout(startWave, 2000);
+    }
+}
+
+function updateMoney() {
+    document.getElementById('money').textContent = money;
+}
+
+function endGame() {
+    gameActive = false;
+    document.getElementById('gameOver').style.display = 'block';
+}
+
+function restartGame() {
+    board.innerHTML = '';
+    enemies = [];
+    towers = [];
+    money = 100;
+    currentWave = 1;
+    gameActive = true;
+    document.getElementById('gameOver').style.display = 'none';
+    initGame();
+}
+
+function initGame() {
+    createBoard();
+    updateMoney();
+    startWave();
+    gameLoop();
+}
+
+window.addEventListener('load', initGame);
