@@ -851,3 +851,43 @@ function updateTowerVisuals(tower) {
         }
     } else if (tower.radiusElem) {
         tower.radiusElem.style
+        tower.radiusElem.style.width = tower.radius * 2 + 'px';
+        tower.radiusElem.style.height = tower.radius * 2 + 'px';
+    }
+}
+
+function endGame() {
+    gameActive = false;
+    document.getElementById('gameOver').style.display = 'block';
+}
+
+function restartGame() {
+    board.innerHTML = '';
+    enemies = [];
+    towers = [];
+    
+    money = 100;
+    currentWave = 1;
+    gameActive = true;
+    bossRadiusElem = null;
+    towerIdCounter = 0;
+    
+    updateMoney();
+    updateWave();
+    document.getElementById('gameOver').style.display = 'none';
+    closeUpgradeMenu();
+    
+    createBoard();
+    startWave();
+    gameLoop();
+}
+
+function initGame() {
+    createBoard();
+    updateMoney();
+    updateWave();
+    gameLoop();
+    startWave();
+}
+
+window.addEventListener('load', initGame);
