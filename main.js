@@ -498,6 +498,40 @@ board.addEventListener('click', (e) => {
 });
 
 function placeTower(tower) {
+    function placeTower(tower) {
+    const elem = document.createElement('div');
+    elem.className = `tower ${tower.type}`;
+    elem.style.left = tower.x + 'px';
+    elem.style.top = tower.y + 'px';
+    elem.onclick = (e) => {
+        e.stopPropagation();
+        showUpgradeMenu(tower);
+    };
+    board.appendChild(elem);
+    
+    // Для бизнесмена запускаем генерацию денег
+    if (tower.type === 'businessman') {
+        tower.incomeTimer = setInterval(() => {
+            money += tower.upgraded ? tower.upgradedIncome : tower.income;
+            updateMoney();
+        }, tower.upgraded ? tower.upgradedIncomeInterval : tower.incomeInterval);
+    }
+    
+    // Для короля запускаем спавн квадратов
+    if (tower.type === 'king') {
+        tower.spawnTimer = setInterval(() => {
+            spawnKingSquare(tower);
+        }, tower.upgraded ? tower.upgradedSpawnInterval : tower.spawnInterval);
+        
+        // Блокируем кнопку короля
+        document.getElementById('kingButton').style.opacity = '0.5';
+        document.getElementById('kingButton').style.pointerEvents = 'none';
+    }
+    
+    // Для бинокля добавляем бонус к радиусу
+    if (tower.type === 'binoculars') {
+        applyBinocularsBonus(tower);
+    }
     const elem = document.createElement('div');
     elem.className = `tower ${tower.type}`;
     elem.style.left = tower.x + 'px';
@@ -634,6 +668,50 @@ function spawnEnemy(type, hpMultiplier = 1) {
 }
 
 function gameLoop() {
+    let kingSquares = [];
+
+function gameLoop() {
+    if (!gameActive) return;
+    
+    // Движение квадратов короля
+    kingSquares.forEach((square, index) => {
+        const dx = square.targetX - square.x;
+        const dy = square.targetY - square.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 2) {
+            // Квадрат достиг цели
+            square.elem.remove();
+            kingSquares.splice(index, 1);
+            
+            // Наносим урон врагам в конце пути
+            enemies.forEach(enemy => {
+                const enemyX = enemy.x;
+                const enemyY = enemy.y;
+                const endX = 20 * tileSize + tileSize/2;
+                const endY = 5 * tileSize + tileSize/2;
+                const distToEnd = Math.sqrt(Math.pow(enemyX - endX, 2) + Math.pow(enemyY - endY, 2));
+                
+                if (distToEnd < 30) { // Радиус поражения
+                    enemy.hp -= enemy.maxHp * 0.25; // 25% от максимального HP
+                    
+                    if (enemy.hp <= 0) {
+                        enemy.elem.remove();
+                        if (enemy.radiusElem) enemy.radiusElem.remove();
+                        enemies = enemies.filter(e => e !== enemy);
+                        money += getEnemyReward(enemy.type);
+                        updateMoney();
+                    }
+                }
+            });
+        } else {
+            square.x += (dx / distance) * square.speed;
+            square.y += (dy / distance) * square.speed;
+            square.elem.style.left = square.x + 'px';
+            square.elem.style.top = square.y + 'px';
+        }
+    });
+    
     if (!gameActive) return;
     
     // Движение врагов
@@ -1169,3 +1247,128 @@ function initGame() {
 }
 
 window.addEventListener('load', initGame);
+    function spawnKingSquare(kingTower) {
+    const square = {
+        x: kingTower.x,
+        y: kingTower.y,
+        hp: kingTower.squareHp,
+        targetX: 20 * tileSize + tileSize/2, // Конец пути
+        targetY: 5 * tileSize + tileSize/2,
+        speed: 2
+    };
+    
+    const elem = document.createElement('div');
+    elem.className = 'king-square';
+    elem.style.left = square.x + 'px';
+    elem.style.top = square.y + 'px';
+    board.appendChild(elem);
+    
+    square.elem = elem;
+    kingSquares.push(square);
+}
+
+// Новая функция для применения бонуса бинокля
+function applyBinocularsBonus(binocularsTower) {
+    const bonus = binocularsTower.upgraded ? binocularsTower.upgradedRadiusBonus : binocularsTower.radiusBonus;
+    
+    towers.forEach(tower => {
+        if (tower !== binocularsTower && tower.type !== 'businessman' && tower.type !== 'king') {
+            // Проверяем расстояние до бинокля
+            const dx = tower.x - binocularsTower.x;
+            const dy = tower.y - binocularsTower.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            if (distance < 200) { // Радиус действия бинокля
+                if (!tower.binocularsBonus) {
+                    tower.binocularsBonus = 0;
+                }
+                tower.binocularsBonus = bonus;
+                
+                // Обновляем визуализацию радиуса
+                if (tower.type === 'knight' || tower.type === 'omega') {
+                    if (tower.innerRadiusElem) {
+                        tower.innerRadiusElem.style.width = (tower.innerRadius + bonus) * 2 + 'px';
+                        tower.innerRadiusElem.style.height = (tower.innerRadius + bonus) * 2 + 'px';
+                    }
+                    if (tower.outerRadiusElem) {
+                        tower.outerRadiusElem.style.width = (tower.outerRadius + bonus) * 2 + 'px';
+                        tower.outerRadiusElem.style.height = (tower.outerRadius + bonus) * 2 + 'px';
+                    }
+                } else if (tower.radiusElem) {
+                    tower.radiusElem.style.width = (tower.radius + bonus) * 2 + 'px';
+                    tower.radiusElem.style.height = (tower.radius + bonus) * 2 + 'px';
+                }
+            }
+        }
+    });
+}
+    function showUpgradeMenu(tower) {
+    // ... существующий код ...
+    
+    if (tower.type === 'businessman') {
+        statsHTML += `
+            Доход: ${tower.upgraded ? tower.upgradedIncome : tower.income} монет<br>
+            Интервал: ${(tower.upgraded ? tower.upgradedIncomeInterval : tower.incomeInterval)/1000} сек<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'king') {
+        statsHTML += `
+            Интервал спавна: ${(tower.upgraded ? tower.upgradedSpawnInterval : tower.spawnInterval)/1000} сек<br>
+            Урон квадратов: ${tower.damage*100}% HP врага<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'binoculars') {
+        statsHTML += `
+            Бонус к радиусу: +${tower.upgraded ? tower.upgradedRadiusBonus/10 : tower.radiusBonus/10}st<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    }
+    
+    // ... остальной код функции ...
+}
+    function upgradeTower() {
+    // ... существующий код ...
+    
+    switch(selectedTower.type) {
+        // ... существующие case ...
+        case 'businessman':
+            selectedTower.income = selectedTower.upgradedIncome;
+            clearInterval(selectedTower.incomeTimer);
+            selectedTower.incomeTimer = setInterval(() => {
+                money += selectedTower.income;
+                updateMoney();
+            }, selectedTower.upgradedIncomeInterval);
+            break;
+        case 'king':
+            selectedTower.spawnInterval = selectedTower.upgradedSpawnInterval;
+            clearInterval(selectedTower.spawnTimer);
+            selectedTower.spawnTimer = setInterval(() => {
+                spawnKingSquare(selectedTower);
+            }, selectedTower.spawnInterval);
+            break;
+        case 'binoculars':
+            selectedTower.radiusBonus = selectedTower.upgradedRadiusBonus;
+            applyBinocularsBonus(selectedTower);
+            break;
+    }
+    
+    // ... остальной код функции ...
+}
+
+// В restartGame добавьте сброс новых переменных:
+function restartGame() {
+    // ... существующий код ...
+    
+    // Удаляем квадраты короля
+    kingSquares.forEach(square => {
+        if (square.elem) square.elem.remove();
+    });
+    kingSquares = [];
+    
+    // Разблокируем кнопку короля
+    document.getElementById('kingButton').style.opacity = '1';
+    document.getElementById('kingButton').style.pointerEvents = 'auto';
+    
+    // ... остальной код функции ...
+}
+
