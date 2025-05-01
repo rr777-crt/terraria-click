@@ -94,6 +94,35 @@ document.addEventListener('DOMContentLoaded', function() {
             upgradedRadius: 70,
             upgradedRangeBonus: 70
         }
+         businessman: {
+        type: 'businessman',
+        cost: 600,
+        income: 100,
+        incomeInterval: 5000,
+        upgraded: false,
+        upgradeCost: 5000,
+        upgradedIncome: 250,
+        upgradedIncomeInterval: 5000
+    },
+    king: {
+        type: 'king',
+        cost: 5000,
+        spawnInterval: 15000,
+        squareHp: 5,
+        damage: 0.25, // 25% HP врага
+        upgraded: false,
+        upgradeCost: 20000,
+        upgradedSpawnInterval: 7500
+    },
+    binoculars: {
+        type: 'binoculars',
+        cost: 1000,
+        radiusBonus: 50,
+        upgraded: false,
+        upgradeCost: 2250,
+        upgradedRadiusBonus: 70
+    }
+};
     };
 
     // Initialize Game
