@@ -891,3 +891,327 @@ function initGame() {
 }
 
 window.addEventListener('load', initGame);
+// Добавляем новые типы башен в towerTypes
+const towerTypes = {
+    // ... предыдущие типы башен ...
+    businessman: {
+        type: 'businessman',
+        cost: 600,
+        income: 100,
+        incomeInterval: 5000, // 5 секунд
+        radius: 0, // Не атакует
+        upgraded: false,
+        upgradeCost: 5000,
+        upgradedIncome: 250
+    },
+    king: {
+        type: 'king',
+        cost: 5000,
+        spawnInterval: 15000, // 15 секунд
+        squareHp: 5,
+        radius: 0, // Не атакует
+        upgraded: false,
+        upgradeCost: 20000,
+        upgradedSpawnInterval: 7500 // 7.5 секунд
+    },
+    binoculars: {
+        type: 'binoculars',
+        cost: 1000,
+        radius: 50, // 5st
+        rangeBonus: 50, // +5st
+        upgraded: false,
+        upgradeCost: 2250,
+        upgradedRadius: 70, // 7st
+        upgradedRangeBonus: 70 // +7st
+    }
+};
+
+// Добавляем новые стили в CSS (добавить в style.css)
+.tower.businessman {
+    background: #4CAF50;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.tower.king {
+    background: #FFD700;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+}
+.tower.binoculars {
+    background: #795548;
+    clip-path: circle(50% at 50% 50%);
+}
+.king-square {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    background: #FF6347;
+    transform: translate(-10px, -10px);
+}
+
+// Обновляем функцию placeTower
+function placeTower(tower) {
+    const elem = document.createElement('div');
+    elem.className = `tower ${tower.type}`;
+    elem.style.left = tower.x + 'px';
+    elem.style.top = tower.y + 'px';
+    elem.onclick = (e) => {
+        e.stopPropagation();
+        showUpgradeMenu(tower);
+    };
+    board.appendChild(elem);
+    
+    // Особые случаи для новых башен
+    if (tower.type === 'binoculars') {
+        const radius = document.createElement('div');
+        radius.className = 'radius';
+        radius.style.width = tower.radius * 2 + 'px';
+        radius.style.height = tower.radius * 2 + 'px';
+        radius.style.left = tower.x + 'px';
+        radius.style.top = tower.y + 'px';
+        radius.style.display = showRadius ? 'block' : 'none';
+        board.appendChild(radius);
+        tower.radiusElem = radius;
+        
+        // Применяем бонус к другим башням
+        applyBinocularsBonus(tower);
+    }
+    
+    if (tower.type === 'businessman') {
+        // Запускаем генерацию денег
+        tower.incomeIntervalId = setInterval(() => {
+            money += tower.upgraded ? tower.upgradedIncome : tower.income;
+            updateMoney();
+        }, tower.incomeInterval);
+    }
+    
+    if (tower.type === 'king') {
+        // Проверяем, что король только один
+        if (towers.some(t => t.type === 'king')) {
+            alert('Может быть только один король!');
+            return;
+        }
+        
+        // Запускаем генерацию квадратов
+        tower.spawnIntervalId = setInterval(() => {
+            spawnKingSquare(tower);
+        }, tower.upgraded ? tower.upgradedSpawnInterval : tower.spawnInterval);
+    }
+    
+    tower.elem = elem;
+    towers.push(tower);
+}
+
+// Новая функция для спавна квадратов короля
+function spawnKingSquare(kingTower) {
+    const square = {
+        x: kingTower.x,
+        y: kingTower.y,
+        hp: kingTower.squareHp,
+        targetX: pathTiles[pathTiles.length-1].x * tileSize + tileSize/2,
+        targetY: pathTiles[pathTiles.length-1].y * tileSize + tileSize/2,
+        speed: 2
+    };
+    
+    const elem = document.createElement('div');
+    elem.className = 'king-square';
+    elem.style.left = square.x + 'px';
+    elem.style.top = square.y + 'px';
+    board.appendChild(elem);
+    
+    square.elem = elem;
+    kingTower.squares = kingTower.squares || [];
+    kingTower.squares.push(square);
+    
+    // Движение квадрата
+    const moveInterval = setInterval(() => {
+        const dx = square.targetX - square.x;
+        const dy = square.targetY - square.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 2) {
+            // Квадрат достиг цели
+            clearInterval(moveInterval);
+            elem.remove();
+            kingTower.squares = kingTower.squares.filter(s => s !== square);
+            return;
+        }
+        
+        square.x += (dx / distance) * square.speed;
+        square.y += (dy / distance) * square.speed;
+        elem.style.left = square.x + 'px';
+        elem.style.top = square.y + 'px';
+        
+        // Проверка столкновения с врагами
+        enemies.forEach(enemy => {
+            const enemyDx = enemy.x - square.x;
+            const enemyDy = enemy.y - square.y;
+            const enemyDistance = Math.sqrt(enemyDx*enemyDx + enemyDy*enemyDy);
+            
+            if (enemyDistance < 20) { // Радиус столкновения
+                enemy.hp -= enemy.maxHp * 0.25; // Уменьшаем HP на 25%
+                square.hp--;
+                
+                if (square.hp <= 0) {
+                    clearInterval(moveInterval);
+                    elem.remove();
+                    kingTower.squares = kingTower.squares.filter(s => s !== square);
+                }
+                
+                if (enemy.hp <= 0) {
+                    // Плавное исчезновение врага
+                    enemy.elem.style.transition = 'all 1s';
+                    enemy.elem.style.transform = 'translate(-10px, -10px) scale(0)';
+                    setTimeout(() => {
+                        enemy.elem.remove();
+                        if (enemy.radiusElem) enemy.radiusElem.remove();
+                        enemies = enemies.filter(e => e !== enemy);
+                        money += getEnemyReward(enemy.type);
+                        updateMoney();
+                    }, 1000);
+                }
+            }
+        });
+    }, 1000/60);
+}
+
+// Функция для применения бонуса бинокля
+function applyBinocularsBonus(binocularsTower) {
+    towers.forEach(tower => {
+        if (tower !== binocularsTower && 
+            tower.type !== 'businessman' && 
+            tower.type !== 'king') {
+            
+            const dx = tower.x - binocularsTower.x;
+            const dy = tower.y - binocularsTower.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            if (distance < binocularsTower.radius) {
+                // Увеличиваем радиус башни
+                const bonus = binocularsTower.upgraded ? 
+                    binocularsTower.upgradedRangeBonus : 
+                    binocularsTower.rangeBonus;
+                
+                if (tower.type === 'knight' || tower.type === 'omega') {
+                    tower.innerRadius += bonus;
+                    tower.outerRadius += bonus;
+                    if (tower.innerRadiusElem) {
+                        tower.innerRadiusElem.style.width = tower.innerRadius * 2 + 'px';
+                        tower.innerRadiusElem.style.height = tower.innerRadius * 2 + 'px';
+                    }
+                    if (tower.outerRadiusElem) {
+                        tower.outerRadiusElem.style.width = tower.outerRadius * 2 + 'px';
+                        tower.outerRadiusElem.style.height = tower.outerRadius * 2 + 'px';
+                    }
+                } else if (tower.radiusElem) {
+                    tower.radius += bonus;
+                    tower.radiusElem.style.width = tower.radius * 2 + 'px';
+                    tower.radiusElem.style.height = tower.radius * 2 + 'px';
+                }
+            }
+        }
+    });
+}
+
+// Обновляем функцию upgradeTower для новых башен
+function upgradeTower() {
+    if (!selectedTower || !gameActive) return;
+    if (selectedTower.upgraded || money < selectedTower.upgradeCost) return;
+    
+    money -= selectedTower.upgradeCost;
+    updateMoney();
+    selectedTower.upgraded = true;
+    
+    switch(selectedTower.type) {
+        // ... предыдущие случаи ...
+        case 'businessman':
+            clearInterval(selectedTower.incomeIntervalId);
+            selectedTower.incomeIntervalId = setInterval(() => {
+                money += selectedTower.upgradedIncome;
+                updateMoney();
+            }, selectedTower.incomeInterval);
+            break;
+        case 'king':
+            clearInterval(selectedTower.spawnIntervalId);
+            selectedTower.spawnIntervalId = setInterval(() => {
+                spawnKingSquare(selectedTower);
+            }, selectedTower.upgradedSpawnInterval);
+            break;
+        case 'binoculars':
+            selectedTower.radius = selectedTower.upgradedRadius;
+            selectedTower.rangeBonus = selectedTower.upgradedRangeBonus;
+            if (selectedTower.radiusElem) {
+                selectedTower.radiusElem.style.width = selectedTower.radius * 2 + 'px';
+                selectedTower.radiusElem.style.height = selectedTower.radius * 2 + 'px';
+            }
+            // Обновляем бонус для всех башен в радиусе
+            applyBinocularsBonus(selectedTower);
+            break;
+    }
+    
+    updateTowerVisuals(selectedTower);
+    showUpgradeMenu(selectedTower);
+}
+
+// Обновляем функцию showUpgradeMenu для новых башен
+function showUpgradeMenu(tower) {
+    // ... предыдущий код ...
+    
+    if (tower.type === 'businessman') {
+        statsHTML += `
+            Доход: ${tower.upgraded ? tower.upgradedIncome : tower.income} монет<br>
+            Интервал: ${tower.incomeInterval/1000} сек<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'king') {
+        statsHTML += `
+            Квадраты: 1 каждые ${tower.upgraded ? tower.upgradedSpawnInterval/1000 : tower.spawnInterval/1000} сек<br>
+            Урон: 25% HP врага<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'binoculars') {
+        statsHTML += `
+            Радиус: ${Math.round(tower.radius/10)}st<br>
+            Бонус к радиусу: +${Math.round(tower.rangeBonus/10)}st<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    }
+    
+    // ... остальной код ...
+}
+
+// Обновляем getTowerName
+function getTowerName(type) {
+    switch(type) {
+        // ... предыдущие случаи ...
+        case 'businessman': return 'Бизнесмен';
+        case 'king': return 'Король';
+        case 'binoculars': return 'Бинокль';
+        default: return 'Башня';
+    }
+}
+
+// Обновляем функцию enemyDeath для плавного исчезновения
+function enemyDeath(enemy) {
+    enemy.elem.style.transition = 'all 1s';
+    enemy.elem.style.transform = 'translate(-10px, -10px) scale(0)';
+    setTimeout(() => {
+        enemy.elem.remove();
+        if (enemy.radiusElem) enemy.radiusElem.remove();
+        enemies = enemies.filter(e => e !== enemy);
+        money += getEnemyReward(enemy.type);
+        updateMoney();
+    }, 1000);
+}
+
+// Удлиняем дорожку (обновляем path в createBoard)
+const path = [
+    {x:0, y:5}, {x:1, y:5}, {x:2, y:5}, {x:3, y:5}, {x:4, y:5}, {x:5, y:5},
+    {x:5, y:6}, {x:5, y:7}, {x:6, y:7}, {x:7, y:7}, {x:8, y:7}, {x:9, y:7},
+    {x:9, y:6}, {x:9, y:5}, {x:10, y:5}, {x:11, y:5}, {x:12, y:5}, {x:13, y:5},
+    {x:13, y:6}, {x:13, y:7}, {x:14, y:7}, {x:15, y:7}, {x:16, y:7}, {x:17, y:7},
+    {x:17, y:6}, {x:17, y:5}, {x:18, y:5}, {x:19, y:5}, {x:20, y:5}, {x:20, y:6},
+    {x:20, y:7}, {x:21, y:7}, {x:22, y:7}, {x:23, y:7}, {x:24, y:7}, {x:25, y:7},
+    {x:25, y:6}, {x:25, y:5}, {x:25, y:4}, {x:25, y:3}, {x:26, y:3}, {x:27, y:3},
+    {x:28, y:3}, {x:29, y:3}, {x:30, y:3}, {x:31, y:3}, {x:32, y:3}, {x:33, y:3},
+    {x:33, y:4}, {x:33, y:5}, {x:34, y:5}, {x:35, y:5}, {x:36, y:5}, {x:37, y:5},
+    {x:37, y:6}, {x:37, y:7}, {x:38, y:7}, {x:39, y:7}, {x:40, y:7}
+];
