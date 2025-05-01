@@ -230,3 +230,27 @@
     font-weight: bold;
     margin: 10px 0;
 }
+/* Добавьте эти стили в конец файла style.css */
+.tower.businessman {
+    background: #FFD700;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.tower.king {
+    background: #800080;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.tower.binoculars {
+    background: #4682B4;
+    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+}
+
+.king-square {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    background: #FF6347;
+    transform: translate(-10px, -10px);
+    z-index: 10;
+}
