@@ -251,3 +251,892 @@ function toggleRadius() {
 function restartGame() {
     // Реализация перезапуска игры
 }
+// Инициализация игры
+const board = document.getElementById('gameBoard');
+const moneyDisplay = document.getElementById('moneyDisplay');
+const waveDisplay = document.getElementById('waveDisplay');
+const tileSize = 40;
+const cols = 21; // Ширина поля в тайлах
+const rows = 12; // Высота поля в тайлах
+let placingTower = false;
+let money = 100;
+let currentWave = 1;
+let enemies = [];
+let towers = [];
+let selectedTower = null;
+let showRadius = false;
+let pathTiles = [];
+let waveInProgress = false;
+let gameActive = true;
+let bossRadiusElem = null;
+let towerIdCounter = 0;
+
+const towerTypes = {
+    pistol: {
+        type: 'pistol',
+        cost: 50,
+        damage: 1,
+        radius: 100,
+        attackSpeed: 1,
+        upgraded: false,
+        upgradeCost: 150,
+        upgradedDamage: 2,
+        upgradedRadius: 150
+    },
+    swordsman: {
+        type: 'swordsman',
+        cost: 80,
+        damage: 2,
+        radius: 50,
+        attackSpeed: 2,
+        upgraded: false,
+        upgradeCost: 150,
+        upgradedDamage: 3,
+        upgradedAttackSpeed: 3
+    },
+    sniper: {
+        type: 'sniper',
+        cost: 250,
+        damage: 10,
+        radius: 1000,
+        attackSpeed: 0.2,
+        upgraded: false,
+        upgradeCost: 1000,
+        upgradedAttackSpeed: 0.4
+    },
+    knight: {
+        type: 'knight',
+        cost: 1000,
+        innerRadius: 50,
+        innerDamage: 2,
+        innerAttackSpeed: 2,
+        outerRadius: 150,
+        outerDamage: 5,
+        outerAttackSpeed: 0.666,
+        upgraded: false,
+        upgradeCost: 2500,
+        upgradedInnerRadius: 70,
+        upgradedInnerAttackSpeed: 4,
+        upgradedOuterRadius: 250,
+        upgradedOuterAttackSpeed: 1
+    },
+    freezer: {
+        type: 'freezer',
+        cost: 500,
+        radius: 100,
+        slowFactor: 0.5,
+        upgraded: false,
+        upgradeCost: 1000,
+        upgradedRadius: 150,
+        upgradedSlowFactor: 0.3
+    },
+    chance: {
+        type: 'chance',
+        cost: 777,
+        minDamage: 1,
+        maxDamage: 7,
+        radius: 170,
+        attackSpeed: 1,
+        upgraded: false,
+        upgradeCost: 7777,
+        upgradedMinDamage: 7,
+        upgradedMaxDamage: 17
+    },
+    turret: {
+        type: 'turret',
+        cost: 1250,
+        damage: 1,
+        radius: 150,
+        attackSpeed: 10,
+        upgraded: false,
+        upgradeCost: 2000,
+        upgradedDamage: 2,
+        upgradedAttackSpeed: 14
+    },
+    omega: {
+        type: 'omega',
+        cost: 10000,
+        innerRadius: 100,
+        innerDamage: 10,
+        innerAttackSpeed: 10,
+        outerRadius: 250,
+        outerDamage: 15,
+        outerAttackSpeed: 1,
+        upgraded: false,
+        upgradeCost: 25000,
+        upgradedInnerRadius: 150,
+        upgradedInnerAttackSpeed: 20,
+        upgradedOuterRadius: 350,
+        upgradedOuterAttackSpeed: 1.5
+    }
+};
+
+function createBoard() {
+    board.innerHTML = '';
+    pathTiles = [];
+    
+    // Путь врагов (координаты x, y)
+    const path = [
+        {x:0, y:5}, {x:1, y:5}, {x:2, y:5}, {x:3, y:5}, {x:4, y:5}, {x:5, y:5},
+        {x:5, y:6}, {x:5, y:7}, {x:6, y:7}, {x:7, y:7}, {x:8, y:7}, {x:9, y:7},
+        {x:9, y:6}, {x:9, y:5}, {x:10, y:5}, {x:11, y:5}, {x:12, y:5}, {x:13, y:5},
+        {x:13, y:6}, {x:13, y:7}, {x:14, y:7}, {x:15, y:7}, {x:16, y:7}, {x:17, y:7},
+        {x:17, y:6}, {x:17, y:5}, {x:18, y:5}, {x:19, y:5}, {x:20, y:5}
+    ];
+    
+    // Создаем траву (фон)
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile grass';
+            tile.style.left = x * tileSize + 'px';
+            tile.style.top = y * tileSize + 'px';
+            board.appendChild(tile);
+        }
+    }
+    
+    // Создаем путь
+    path.forEach((pos, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${index === 0 ? 'start' : index === path.length-1 ? 'end' : 'path'}`;
+        tile.style.left = pos.x * tileSize + 'px';
+        tile.style.top = pos.y * tileSize + 'px';
+        board.appendChild(tile);
+        pathTiles.push({x: pos.x, y: pos.y});
+    });
+}
+
+function updateMoney() {
+    moneyDisplay.textContent = `Деньги: ${money}`;
+}
+
+function updateWave() {
+    waveDisplay.textContent = `Волна: ${currentWave}`;
+}
+
+function toggleRadius() {
+    showRadius = !showRadius;
+    document.getElementById('showRadiusBtn').textContent = showRadius ? 'Скрыть радиусы' : 'Показать радиусы';
+    
+    towers.forEach(tower => {
+        if (tower.type === 'knight' || tower.type === 'omega') {
+            if (tower.innerRadiusElem) tower.innerRadiusElem.style.display = showRadius ? 'block' : 'none';
+            if (tower.outerRadiusElem) tower.outerRadiusElem.style.display = showRadius ? 'block' : 'none';
+        } else if (tower.radiusElem) {
+            tower.radiusElem.style.display = showRadius ? 'block' : 'none';
+        }
+    });
+}
+
+function selectTower(type, cost) {
+    if (!gameActive) return;
+    if (money >= cost && !placingTower) {
+        placingTower = type;
+    }
+}
+
+board.addEventListener('click', (e) => {
+    if (!gameActive || !placingTower) return;
+    
+    const rect = board.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / tileSize);
+    const y = Math.floor((e.clientY - rect.top) / tileSize);
+    
+    // Проверяем, можно ли поставить башню
+    const isPath = pathTiles.some(tile => tile.x === x && tile.y === y);
+    const isOccupied = towers.some(tower => 
+        Math.floor(tower.x / tileSize) === x && 
+        Math.floor(tower.y / tileSize) === y
+    );
+    
+    if (!isPath && !isOccupied) {
+        const tower = {
+            ...towerTypes[placingTower],
+            id: towerIdCounter++,
+            x: x * tileSize + tileSize/2,
+            y: y * tileSize + tileSize/2,
+            totalDamage: 0,
+            lastAttack: 0,
+            lastInnerAttack: 0,
+            lastOuterAttack: 0
+        };
+        
+        placeTower(tower);
+        money -= towerTypes[placingTower].cost;
+        updateMoney();
+        placingTower = false;
+    }
+});
+
+function placeTower(tower) {
+    const elem = document.createElement('div');
+    elem.className = `tower ${tower.type}`;
+    elem.style.left = tower.x + 'px';
+    elem.style.top = tower.y + 'px';
+    elem.onclick = (e) => {
+        e.stopPropagation();
+        showUpgradeMenu(tower);
+    };
+    board.appendChild(elem);
+    
+    if (tower.type === 'knight' || tower.type === 'omega') {
+        const innerRadius = document.createElement('div');
+        innerRadius.className = 'radius inner';
+        innerRadius.style.width = tower.innerRadius * 2 + 'px';
+        innerRadius.style.height = tower.innerRadius * 2 + 'px';
+        innerRadius.style.left = tower.x + 'px';
+        innerRadius.style.top = tower.y + 'px';
+        innerRadius.style.display = showRadius ? 'block' : 'none';
+        board.appendChild(innerRadius);
+        
+        const outerRadius = document.createElement('div');
+        outerRadius.className = 'radius';
+        outerRadius.style.width = tower.outerRadius * 2 + 'px';
+        outerRadius.style.height = tower.outerRadius * 2 + 'px';
+        outerRadius.style.left = tower.x + 'px';
+        outerRadius.style.top = tower.y + 'px';
+        outerRadius.style.display = showRadius ? 'block' : 'none';
+        board.appendChild(outerRadius);
+        
+        tower.innerRadiusElem = innerRadius;
+        tower.outerRadiusElem = outerRadius;
+    } else {
+        const radius = document.createElement('div');
+        radius.className = 'radius';
+        radius.style.width = tower.radius * 2 + 'px';
+        radius.style.height = tower.radius * 2 + 'px';
+        radius.style.left = tower.x + 'px';
+        radius.style.top = tower.y + 'px';
+        radius.style.display = showRadius ? 'block' : 'none';
+        board.appendChild(radius);
+        tower.radiusElem = radius;
+    }
+    
+    tower.elem = elem;
+    towers.push(tower);
+}
+
+function spawnEnemy(type, hpMultiplier = 1) {
+    let hp, speed, color;
+    
+    switch(type) {
+        case 'red':
+            hp = 2 * hpMultiplier;
+            speed = 2;
+            color = 'red';
+            break;
+        case 'purple':
+            hp = 5 * hpMultiplier;
+            speed = 2;
+            color = 'purple';
+            break;
+        case 'gold':
+            hp = 15 * hpMultiplier;
+            speed = 4;
+            color = 'gold';
+            break;
+        case 'green':
+            hp = 100 * hpMultiplier;
+            speed = 1;
+            color = 'green';
+            break;
+        case 'black':
+            hp = 200 * hpMultiplier;
+            speed = 0.666;
+            color = 'black';
+            break;
+        case 'pink':
+            hp = 50 * hpMultiplier;
+            speed = 6;
+            color = 'pink';
+            break;
+        case 'boss':
+            hp = 250 * hpMultiplier;
+            speed = 1.5;
+            color = 'boss';
+            break;
+        default:
+            hp = 2 * hpMultiplier;
+            speed = 2;
+            color = 'red';
+    }
+    
+    const enemy = {
+        x: 0,
+        y: 5 * tileSize + tileSize/2,
+        hp: hp,
+        maxHp: hp,
+        pathIndex: 0,
+        speed: speed,
+        baseSpeed: speed,
+        type: type,
+        color: color,
+        slowedBy: null
+    };
+    
+    const elem = document.createElement('div');
+    elem.className = `enemy ${color}`;
+    elem.style.left = enemy.x + 'px';
+    elem.style.top = enemy.y + 'px';
+    
+    const hpText = document.createElement('div');
+    hpText.className = 'enemy-hp';
+    hpText.textContent = enemy.hp;
+    elem.appendChild(hpText);
+    
+    board.appendChild(elem);
+    
+    enemy.elem = elem;
+    enemy.hpText = hpText;
+    
+    if (type === 'boss') {
+        const radius = document.createElement('div');
+        radius.className = 'boss-radius';
+        radius.style.width = '100px';
+        radius.style.height = '100px';
+        radius.style.left = enemy.x + 'px';
+        radius.style.top = enemy.y + 'px';
+        board.appendChild(radius);
+        enemy.radiusElem = radius;
+        bossRadiusElem = radius;
+    }
+    
+    enemies.push(enemy);
+}
+
+function gameLoop() {
+    if (!gameActive) return;
+    
+    // Движение врагов
+    const path = [
+        {x:0, y:5}, {x:1, y:5}, {x:2, y:5}, {x:3, y:5}, {x:4, y:5}, {x:5, y:5},
+        {x:5, y:6}, {x:5, y:7}, {x:6, y:7}, {x:7, y:7}, {x:8, y:7}, {x:9, y:7},
+        {x:9, y:6}, {x:9, y:5}, {x:10, y:5}, {x:11, y:5}, {x:12, y:5}, {x:13, y:5},
+        {x:13, y:6}, {x:13, y:7}, {x:14, y:7}, {x:15, y:7}, {x:16, y:7}, {x:17, y:7},
+        {x:17, y:6}, {x:17, y:5}, {x:18, y:5}, {x:19, y:5}, {x:20, y:5}
+    ];
+    
+    enemies.forEach((enemy, index) => {
+        if (enemy.pathIndex >= path.length) {
+            // Враг дошел до конца
+            enemy.elem.remove();
+            if (enemy.radiusElem) enemy.radiusElem.remove();
+            enemies.splice(index, 1);
+            endGame();
+            return;
+        }
+        
+        const target = path[enemy.pathIndex];
+        const targetX = target.x * tileSize + tileSize/2;
+        const targetY = target.y * tileSize + tileSize/2;
+        
+        const dx = targetX - enemy.x;
+        const dy = targetY - enemy.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < 2) {
+            enemy.pathIndex++;
+        } else {
+            // Применяем замедление от морозилок
+            let speed = enemy.baseSpeed;
+            if (enemy.slowedBy) {
+                const freezer = towers.find(t => t.id === enemy.slowedBy);
+                if (freezer) {
+                    speed *= freezer.slowFactor;
+                } else {
+                    enemy.slowedBy = null;
+                    enemy.elem.classList.remove('slowed');
+                }
+            }
+            
+            enemy.x += (dx / distance) * speed;
+            enemy.y += (dy / distance) * speed;
+        }
+        
+        enemy.elem.style.left = enemy.x + 'px';
+        enemy.elem.style.top = enemy.y + 'px';
+        if (enemy.radiusElem) {
+            enemy.radiusElem.style.left = enemy.x + 'px';
+            enemy.radiusElem.style.top = enemy.y + 'px';
+        }
+        
+        if (enemy.hpText) {
+            enemy.hpText.textContent = Math.max(0, Math.floor(enemy.hp));
+            enemy.hpText.style.left = (enemy.elem.offsetWidth/2 - enemy.hpText.offsetWidth/2) + 'px';
+        }
+        
+        // Проверка радиуса босса
+        if (enemy.type === 'boss') {
+            towers.forEach((tower, towerIndex) => {
+                const dx = tower.x - enemy.x;
+                const dy = tower.y - enemy.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < 50) {
+                    // Уничтожаем башню в радиусе босса
+                    tower.elem.remove();
+                    if (tower.radiusElem) tower.radiusElem.remove();
+                    if (tower.innerRadiusElem) tower.innerRadiusElem.remove();
+                    if (tower.outerRadiusElem) tower.outerRadiusElem.remove();
+                    towers.splice(towerIndex, 1);
+                }
+            });
+        }
+    });
+    
+    // Атака башен
+    towers.forEach(tower => {
+        if (tower.type === 'knight' || tower.type === 'omega') {
+            // Логика для башен с двумя радиусами
+            let closestEnemyInner = null;
+            let closestEnemyOuter = null;
+            let minDistanceInner = Infinity;
+            let minDistanceOuter = Infinity;
+            
+            enemies.forEach(enemy => {
+                const dx = enemy.x - tower.x;
+                const dy = enemy.y - tower.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < tower.innerRadius && distance < minDistanceInner) {
+                    closestEnemyInner = enemy;
+                    minDistanceInner = distance;
+                } else if (distance < tower.outerRadius && distance < minDistanceOuter) {
+                    closestEnemyOuter = enemy;
+                    minDistanceOuter = distance;
+                }
+            });
+            
+            if (closestEnemyInner && Date.now() - tower.lastInnerAttack > 1000/tower.innerAttackSpeed) {
+                closestEnemyInner.hp -= tower.innerDamage;
+                tower.totalDamage += tower.innerDamage;
+                tower.lastInnerAttack = Date.now();
+                
+                if (closestEnemyInner.hp <= 0) {
+                    closestEnemyInner.elem.remove();
+                    if (closestEnemyInner.radiusElem) closestEnemyInner.radiusElem.remove();
+                    enemies = enemies.filter(e => e !== closestEnemyInner);
+                    money += getEnemyReward(closestEnemyInner.type);
+                    updateMoney();
+                }
+            }
+            
+            if (closestEnemyOuter && Date.now() - tower.lastOuterAttack > 1000/tower.outerAttackSpeed) {
+                closestEnemyOuter.hp -= tower.outerDamage;
+                tower.totalDamage += tower.outerDamage;
+                tower.lastOuterAttack = Date.now();
+                
+                if (closestEnemyOuter.hp <= 0) {
+                    closestEnemyOuter.elem.remove();
+                    if (closestEnemyOuter.radiusElem) closestEnemyOuter.radiusElem.remove();
+                    enemies = enemies.filter(e => e !== closestEnemyOuter);
+                    money += getEnemyReward(closestEnemyOuter.type);
+                    updateMoney();
+                }
+            }
+        } else if (tower.type === 'freezer') {
+            // Логика для морозилки
+            enemies.forEach(enemy => {
+                const dx = enemy.x - tower.x;
+                const dy = enemy.y - tower.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < tower.radius) {
+                    if (!enemy.slowedBy) {
+                        enemy.slowedBy = tower.id;
+                        enemy.elem.classList.add('slowed');
+                    }
+                } else if (enemy.slowedBy === tower.id) {
+                    enemy.slowedBy = null;
+                    enemy.elem.classList.remove('slowed');
+                }
+            });
+        } else if (tower.type === 'chance') {
+            // Логика для башни с рандомным уроном
+            let closestEnemy = null;
+            let minDistance = Infinity;
+            
+            enemies.forEach(enemy => {
+                const dx = enemy.x - tower.x;
+                const dy = enemy.y - tower.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < tower.radius && distance < minDistance) {
+                    closestEnemy = enemy;
+                    minDistance = distance;
+                }
+            });
+            
+            if (closestEnemy && Date.now() - tower.lastAttack > 1000/tower.attackSpeed) {
+                const damage = Math.floor(Math.random() * (tower.maxDamage - tower.minDamage + 1)) + tower.minDamage;
+                closestEnemy.hp -= damage;
+                tower.totalDamage += damage;
+                tower.lastAttack = Date.now();
+                
+                if (closestEnemy.hp <= 0) {
+                    closestEnemy.elem.remove();
+                    if (closestEnemy.radiusElem) closestEnemy.radiusElem.remove();
+                    enemies = enemies.filter(e => e !== closestEnemy);
+                    money += getEnemyReward(closestEnemy.type);
+                    updateMoney();
+                }
+            }
+        } else if (tower.type === 'turret') {
+            // Логика для турели
+            let closestEnemy = null;
+            let minDistance = Infinity;
+            
+            enemies.forEach(enemy => {
+                const dx = enemy.x - tower.x;
+                const dy = enemy.y - tower.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < tower.radius && distance < minDistance) {
+                    closestEnemy = enemy;
+                    minDistance = distance;
+                }
+            });
+            
+            if (closestEnemy && Date.now() - tower.lastAttack > 1000/tower.attackSpeed) {
+                closestEnemy.hp -= tower.damage;
+                tower.totalDamage += tower.damage;
+                tower.lastAttack = Date.now();
+                
+                if (closestEnemy.hp <= 0) {
+                    closestEnemy.elem.remove();
+                    if (closestEnemy.radiusElem) closestEnemy.radiusElem.remove();
+                    enemies = enemies.filter(e => e !== closestEnemy);
+                    money += getEnemyReward(closestEnemy.type);
+                    updateMoney();
+                }
+            }
+        } else {
+            // Логика для обычных башен
+            let closestEnemy = null;
+            let minDistance = Infinity;
+            
+            enemies.forEach(enemy => {
+                const dx = enemy.x - tower.x;
+                const dy = enemy.y - tower.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < tower.radius && distance < minDistance) {
+                    closestEnemy = enemy;
+                    minDistance = distance;
+                }
+            });
+            
+            if (closestEnemy && Date.now() - tower.lastAttack > 1000/tower.attackSpeed) {
+                closestEnemy.hp -= tower.damage;
+                tower.totalDamage += tower.damage;
+                tower.lastAttack = Date.now();
+                
+                if (closestEnemy.hp <= 0) {
+                    closestEnemy.elem.remove();
+                    if (closestEnemy.radiusElem) closestEnemy.radiusElem.remove();
+                    enemies = enemies.filter(e => e !== closestEnemy);
+                    money += getEnemyReward(closestEnemy.type);
+                    updateMoney();
+                }
+            }
+        }
+    });
+    
+    checkWaveCompletion();
+    requestAnimationFrame(gameLoop);
+}
+
+function getEnemyReward(type) {
+    switch(type) {
+        case 'red': return 10;
+        case 'purple': return 25;
+        case 'gold': return 50;
+        case 'green': return 100;
+        case 'black': return 150;
+        case 'pink': return 75;
+        case 'boss': return 500;
+        default: return 10;
+    }
+}
+
+function checkWaveCompletion() {
+    if (enemies.length === 0 && waveInProgress) {
+        waveInProgress = false;
+        currentWave++;
+        updateWave();
+        
+        // Награда за волну
+        money += currentWave * 20;
+        updateMoney();
+        
+        // Запуск следующей волны с задержкой
+        setTimeout(startWave, 2000);
+    }
+}
+
+function startWave() {
+    if (!gameActive) return;
+    
+    waveInProgress = true;
+    
+    if (bossRadiusElem) {
+        bossRadiusElem.remove();
+        bossRadiusElem = null;
+    }
+    
+    const hpMultiplier = Math.min(1 + Math.floor(currentWave / 10), 5);
+    
+    if (currentWave <= 4) {
+        for (let i = 0; i < currentWave * 3; i++) {
+            setTimeout(() => spawnEnemy('red', hpMultiplier), i * 2000);
+        }
+    } else if (currentWave === 5) {
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => spawnEnemy('red', hpMultiplier), i * 1500);
+        }
+        setTimeout(() => spawnEnemy('purple', hpMultiplier), 5 * 1500);
+    } else if (currentWave <= 14) {
+        for (let i = 0; i < currentWave * 2; i++) {
+            if (i % 5 === 4) {
+                setTimeout(() => spawnEnemy('purple', hpMultiplier), i * 1000);
+            } else {
+                setTimeout(() => spawnEnemy('red', hpMultiplier), i * 1000);
+            }
+        }
+    } else if (currentWave === 15) {
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => spawnEnemy('purple', hpMultiplier), i * 800);
+        }
+        setTimeout(() => spawnEnemy('gold', hpMultiplier), 10 * 800);
+    } else if (currentWave <= 39) {
+        const count = currentWave * 2;
+        for (let i = 0; i < count; i++) {
+            if (i % 10 === 9) {
+                setTimeout(() => spawnEnemy('gold', hpMultiplier), i * 800);
+            } else if (i % 3 === 2) {
+                setTimeout(() => spawnEnemy('purple', hpMultiplier), i * 800);
+            } else {
+                setTimeout(() => spawnEnemy('red', hpMultiplier), i * 800);
+            }
+        }
+    } else if (currentWave === 40) {
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => spawnEnemy('red', hpMultiplier), i * 600);
+        }
+        setTimeout(() => spawnEnemy('green', hpMultiplier), 20 * 600);
+    } else if (currentWave === 50) {
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => spawnEnemy('red', hpMultiplier), i * 500);
+        }
+        setTimeout(() => spawnEnemy('boss', hpMultiplier), 10 * 500);
+    } else if (currentWave <= 74) {
+        const count = currentWave;
+        for (let i = 0; i < count; i++) {
+            const type = ['red', 'purple', 'gold', 'green'][Math.floor(Math.random() * 4)];
+            setTimeout(() => spawnEnemy(type, hpMultiplier), i * 500);
+        }
+    } else if (currentWave === 75) {
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => spawnEnemy('black', hpMultiplier), i * 400);
+        }
+    } else if (currentWave <= 99) {
+        const count = currentWave;
+        for (let i = 0; i < count; i++) {
+            if (i % 15 === 14) {
+                setTimeout(() => spawnEnemy('black', hpMultiplier), i * 300);
+            } else {
+                const type = ['red', 'purple', 'gold', 'green'][Math.floor(Math.random() * 4)];
+                setTimeout(() => spawnEnemy(type, hpMultiplier), i * 300);
+            }
+        }
+    } else if (currentWave === 100) {
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => spawnEnemy('black', hpMultiplier), i * 200);
+        }
+        setTimeout(() => spawnEnemy('pink', hpMultiplier), 10 * 200);
+    } else {
+        const count = currentWave;
+        for (let i = 0; i < count; i++) {
+            if (i % 20 === 19) {
+                setTimeout(() => spawnEnemy('pink', hpMultiplier), i * 200);
+            } else if (i % 10 === 9) {
+                setTimeout(() => spawnEnemy('black', hpMultiplier), i * 200);
+            } else {
+                const type = ['red', 'purple', 'gold', 'green'][Math.floor(Math.random() * 4)];
+                setTimeout(() => spawnEnemy(type, hpMultiplier), i * 200);
+            }
+        }
+    }
+}
+
+function showUpgradeMenu(tower) {
+    if (!gameActive) return;
+    
+    closeUpgradeMenu();
+    selectedTower = tower;
+    const menu = document.getElementById('upgradeMenu');
+    menu.style.display = 'block';
+    
+    let upgradeButton = menu.querySelector('button');
+    upgradeButton.textContent = `Улучшить (${tower.upgradeCost})`;
+    
+    let statsHTML = `<strong>${getTowerName(tower.type)}</strong><br>`;
+    
+    if (tower.type === 'knight' || tower.type === 'omega') {
+        statsHTML += `
+            Внутренний радиус: ${Math.round(tower.innerRadius/10)}st (${tower.innerDamage} урон, ${(tower.innerAttackSpeed).toFixed(1)} атак/сек)<br>
+            Внешний радиус: ${Math.round(tower.outerRadius/10)}st (${tower.outerDamage} урон, ${(1/tower.outerAttackSpeed).toFixed(1)} сек/атаку)<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'freezer') {
+        statsHTML += `
+            Радиус: ${Math.round(tower.radius/10)}st<br>
+            Замедление: ${Math.round((1 - tower.slowFactor) * 100)}%<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'chance') {
+        statsHTML += `
+            Урон: ${tower.minDamage}-${tower.maxDamage}<br>
+            Радиус: ${Math.round(tower.radius/10)}st<br>
+            Скорость: ${(1/tower.attackSpeed).toFixed(1)} атак/сек<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else if (tower.type === 'turret') {
+        statsHTML += `
+            Урон: ${tower.damage}<br>
+            Радиус: ${Math.round(tower.radius/10)}st<br>
+            Скорость: ${tower.attackSpeed} атак/сек<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    } else {
+        statsHTML += `
+            Урон: ${tower.damage}<br>
+            Радиус: ${Math.round(tower.radius/10)}st<br>
+            Скорость: ${(1/tower.attackSpeed).toFixed(1)} атак/сек<br>
+            ${tower.upgraded ? '<span style="color:green">УЛУЧШЕНО</span>' : ''}
+        `;
+    }
+    
+    document.getElementById('towerStats').innerHTML = statsHTML;
+}
+
+function getTowerName(type) {
+    switch(type) {
+        case 'pistol': return 'Пистолет';
+        case 'swordsman': return 'Мечник';
+        case 'sniper': return 'Снайпер';
+        case 'knight': return 'Рыцарь';
+        case 'freezer': return 'Морозилка';
+        case 'chance': return 'Шанс';
+        case 'turret': return 'Турель';
+        case 'omega': return 'ОМЕГА';
+        default: return 'Башня';
+    }
+}
+
+function closeUpgradeMenu() {
+    document.getElementById('upgradeMenu').style.display = 'none';
+    selectedTower = null;
+}
+
+function upgradeTower() {
+    if (!selectedTower || !gameActive) return;
+    if (selectedTower.upgraded || money < selectedTower.upgradeCost) return;
+    
+    money -= selectedTower.upgradeCost;
+    updateMoney();
+    selectedTower.upgraded = true;
+    
+    switch(selectedTower.type) {
+        case 'pistol':
+            selectedTower.damage = selectedTower.upgradedDamage;
+            selectedTower.radius = selectedTower.upgradedRadius;
+            break;
+        case 'swordsman':
+            selectedTower.damage = selectedTower.upgradedDamage;
+            selectedTower.attackSpeed = selectedTower.upgradedAttackSpeed;
+            break;
+        case 'sniper':
+            selectedTower.attackSpeed = selectedTower.upgradedAttackSpeed;
+            break;
+        case 'knight':
+            selectedTower.innerRadius = selectedTower.upgradedInnerRadius;
+            selectedTower.innerAttackSpeed = selectedTower.upgradedInnerAttackSpeed;
+            selectedTower.outerRadius = selectedTower.upgradedOuterRadius;
+            selectedTower.outerAttackSpeed = selectedTower.upgradedOuterAttackSpeed;
+            break;
+        case 'freezer':
+            selectedTower.radius = selectedTower.upgradedRadius;
+            selectedTower.slowFactor = selectedTower.upgradedSlowFactor;
+            break;
+        case 'chance':
+            selectedTower.minDamage = selectedTower.upgradedMinDamage;
+            selectedTower.maxDamage = selectedTower.upgradedMaxDamage;
+            break;
+        case 'turret':
+            selectedTower.damage = selectedTower.upgradedDamage;
+            selectedTower.attackSpeed = selectedTower.upgradedAttackSpeed;
+            break;
+        case 'omega':
+            selectedTower.innerRadius = selectedTower.upgradedInnerRadius;
+            selectedTower.innerAttackSpeed = selectedTower.upgradedInnerAttackSpeed;
+            selectedTower.outerRadius = selectedTower.upgradedOuterRadius;
+            selectedTower.outerAttackSpeed = selectedTower.upgradedOuterAttackSpeed;
+            break;
+    }
+    
+    updateTowerVisuals(selectedTower);
+    showUpgradeMenu(selectedTower);
+}
+
+function updateTowerVisuals(tower) {
+    if (tower.type === 'knight' || tower.type === 'omega') {
+        if (tower.innerRadiusElem) {
+            tower.innerRadiusElem.style.width = tower.innerRadius * 2 + 'px';
+            tower.innerRadiusElem.style.height = tower.innerRadius * 2 + 'px';
+        }
+        if (tower.outerRadiusElem) {
+            tower.outerRadiusElem.style.width = tower.outerRadius * 2 + 'px';
+            tower.outerRadiusElem.style.height = tower.outerRadius * 2 + 'px';
+        }
+    } else if (tower.radiusElem) {
+        tower.radiusElem.style.width = tower.radius * 2 + 'px';
+        tower.radiusElem.style.height = tower.radius * 2 + 'px';
+    }
+}
+
+function endGame() {
+    gameActive = false;
+    document.getElementById('gameOver').style.display = 'block';
+}
+
+function restartGame() {
+    board.innerHTML = '';
+    enemies = [];
+    towers = [];
+    
+    money = 100;
+    currentWave = 1;
+    gameActive = true;
+    bossRadiusElem = null;
+    towerIdCounter = 0;
+    
+    updateMoney();
+    updateWave();
+    document.getElementById('gameOver').style.display = 'none';
+    closeUpgradeMenu();
+    
+    createBoard();
+    startWave();
+    gameLoop();
+}
+
+function initGame() {
+    createBoard();
+    updateMoney();
+    updateWave();
+    gameLoop();
+    startWave();
+}
+
+window.addEventListener('load', initGame);
