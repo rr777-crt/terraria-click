@@ -1,4 +1,113 @@
 // Инициализация игры
+// В начале файла main.js (после объявления констант)
+const COLS = 40; // Ширина поля в тайлах (увеличено)
+const ROWS = 15; // Высота поля в тайлах (увеличено)
+const TILE_SIZE = 40;
+
+// Обновленный путь (длинный и извилистый)
+const PATH = [
+    {x:0, y:7}, {x:1, y:7}, {x:2, y:7}, {x:3, y:7}, {x:4, y:7}, {x:5, y:7},
+    {x:5, y:6}, {x:5, y:5}, {x:6, y:5}, {x:7, y:5}, {x:8, y:5}, {x:9, y:5},
+    {x:9, y:6}, {x:9, y:7}, {x:10, y:7}, {x:11, y:7}, {x:12, y:7}, {x:13, y:7},
+    {x:13, y:6}, {x:13, y:5}, {x:14, y:5}, {x:15, y:5}, {x:16, y:5}, {x:17, y:5},
+    {x:17, y:6}, {x:17, y:7}, {x:18, y:7}, {x:19, y:7}, {x:20, y:7}, {x:21, y:7},
+    {x:21, y:6}, {x:21, y:5}, {x:22, y:5}, {x:23, y:5}, {x:24, y:5}, {x:25, y:5},
+    {x:25, y:6}, {x:25, y:7}, {x:26, y:7}, {x:27, y:7}, {x:28, y:7}, {x:29, y:7},
+    {x:29, y:6}, {x:29, y:5}, {x:30, y:5}, {x:31, y:5}, {x:32, y:5}, {x:33, y:5},
+    {x:33, y:6}, {x:33, y:7}, {x:34, y:7}, {x:35, y:7}, {x:36, y:7}, {x:37, y:7},
+    {x:37, y:6}, {x:37, y:5}, {x:38, y:5}, {x:39, y:5}
+];
+
+// Обновленная функция createBoard
+function createBoard() {
+    board.innerHTML = '';
+    pathTiles = [];
+    
+    // Устанавливаем размер игрового поля
+    board.style.width = COLS * TILE_SIZE + 'px';
+    board.style.height = ROWS * TILE_SIZE + 'px';
+    
+    // Создаем траву (фон)
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile grass';
+            tile.style.left = x * TILE_SIZE + 'px';
+            tile.style.top = y * TILE_SIZE + 'px';
+            board.appendChild(tile);
+        }
+    }
+    
+    // Создаем путь
+    PATH.forEach((pos, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${index === 0 ? 'start' : index === PATH.length-1 ? 'end' : 'path'}`;
+        tile.style.left = pos.x * TILE_SIZE + 'px';
+        tile.style.top = pos.y * TILE_SIZE + 'px';
+        board.appendChild(tile);
+        pathTiles.push({x: pos.x, y: pos.y});
+    });
+}
+
+// В towerTypes добавляем новые башни (в самом начале, где объявляются все типы)
+const towerTypes = {
+    // ... другие башни ...
+    businessman: {
+        type: 'businessman',
+        name: 'Бизнесмен',
+        cost: 600,
+        income: 100,
+        interval: 5000,
+        radius: 0,
+        upgraded: false,
+        upgradeCost: 5000,
+        upgradedIncome: 250
+    },
+    king: {
+        type: 'king',
+        name: 'Король',
+        cost: 5000,
+        limit: 1, // Можно поставить только один раз
+        spawnInterval: 15000,
+        squareHp: 5,
+        radius: 0,
+        upgraded: false,
+        upgradeCost: 20000,
+        upgradedInterval: 7500
+    },
+    binoculars: {
+        type: 'binoculars',
+        name: 'Бинокль',
+        cost: 1000,
+        radius: 50,
+        rangeBonus: 50,
+        upgraded: false,
+        upgradeCost: 2250,
+        upgradedRadius: 70,
+        upgradedRangeBonus: 70
+    }
+};
+
+// Обновляем HTML для магазина
+<div id="shop">
+    <!-- ... другие башни ... -->
+    <div class="shop-item" onclick="selectTower('businessman', 600)">
+        Бизнесмен (600)<br>
+        Доход: 100/5сек<br>
+        Не атакует
+    </div>
+    <div class="shop-item" onclick="selectTower('king', 5000)">
+        Король (5000)<br>
+        Создает квадраты<br>
+        Только 1 на карте
+    </div>
+    <div class="shop-item" onclick="selectTower('binoculars', 1000)">
+        Бинокль (1000)<br>
+        +5st к радиусу башен<br>
+        Радиус: 5st
+    </div>
+    <!-- ... остальное ... -->
+</div>
 const board = document.getElementById('gameBoard');
 const moneyDisplay = document.getElementById('moneyDisplay');
 const waveDisplay = document.getElementById('waveDisplay');
