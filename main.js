@@ -694,4 +694,181 @@ function restartGame() {
     // Реализация перезапуска игры
     // (уже реализована внутри DOMContentLoaded)
 }
+// Основные переменные игры
+const board = document.getElementById('gameBoard');
+const moneyDisplay = document.getElementById('moneyDisplay');
+const waveDisplay = document.getElementById('waveDisplay');
+const tileSize = 40;
+const cols = 30;
+const rows = 15;
+let money = 300;
+let currentWave = 1;
+let enemies = [];
+let towers = [];
+let kingSquares = [];
+let selectedTower = null;
+let showRadius = false;
+let pathTiles = [];
+let waveInProgress = false;
+let gameActive = true;
+let bossRadiusElem = null;
+let towerIdCounter = 0;
+let kingPlaced = false;
+
+// Путь для врагов
+const PATH = [
+    {x:0, y:7}, {x:1, y:7}, {x:2, y:7}, {x:3, y:7}, {x:4, y:7}, {x:5, y:7},
+    {x:5, y:6}, {x:5, y:5}, {x:6, y:5}, {x:7, y:5}, {x:8, y:5}, {x:9, y:5},
+    {x:9, y:6}, {x:9, y:7}, {x:10, y:7}, {x:11, y:7}, {x:12, y:7}, {x:13, y:7},
+    {x:13, y:6}, {x:13, y:5}, {x:14, y:5}, {x:15, y:5}, {x:16, y:5}, {x:17, y:5},
+    {x:17, y:6}, {x:17, y:7}, {x:18, y:7}, {x:19, y:7}, {x:20, y:7}, {x:21, y:7},
+    {x:21, y:6}, {x:21, y:5}, {x:22, y:5}, {x:23, y:5}, {x:24, y:5}, {x:25, y:5},
+    {x:25, y:6}, {x:25, y:7}, {x:26, y:7}, {x:27, y:7}, {x:28, y:7}, {x:29, y:7}
+];
+
+// Типы башен
+const towerTypes = {
+    pistol: {
+        type: 'pistol',
+        name: 'Пистолет',
+        cost: 50,
+        damage: 1,
+        radius: 100,
+        attackSpeed: 1,
+        upgraded: false,
+        upgradeCost: 150,
+        upgradedDamage: 2,
+        upgradedRadius: 150
+    },
+    swordsman: {
+        type: 'swordsman',
+        name: 'Мечник',
+        cost: 80,
+        damage: 2,
+        radius: 50,
+        attackSpeed: 2,
+        upgraded: false,
+        upgradeCost: 150,
+        upgradedDamage: 3,
+        upgradedAttackSpeed: 3
+    },
+    businessman: {
+        type: 'businessman',
+        name: 'Бизнесмен',
+        cost: 600,
+        income: 100,
+        incomeInterval: 5000,
+        radius: 0,
+        upgraded: false,
+        upgradeCost: 5000,
+        upgradedIncome: 250,
+        upgradedIncomeInterval: 5000
+    },
+    king: {
+        type: 'king',
+        name: 'Король',
+        cost: 5000,
+        spawnInterval: 15000,
+        squareHp: 5,
+        damage: 0.25,
+        radius: 0,
+        upgraded: false,
+        upgradeCost: 20000,
+        upgradedSpawnInterval: 7500
+    },
+    binoculars: {
+        type: 'binoculars',
+        name: 'Бинокль',
+        cost: 1000,
+        radiusBonus: 50,
+        radius: 0,
+        upgraded: false,
+        upgradeCost: 2250,
+        upgradedRadiusBonus: 70
+    }
+};
+
+// Инициализация игры
+function initGame() {
+    createBoard();
+    updateMoney();
+    updateWave();
+    setupShop();
+    startWave();
+    gameLoop();
+}
+
+// Создание игрового поля
+function createBoard() {
+    board.innerHTML = '';
+    board.style.width = cols * tileSize + 'px';
+    board.style.height = rows * tileSize + 'px';
+    pathTiles = [];
+
+    // Создаем траву (фон)
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile grass';
+            tile.style.left = x * tileSize + 'px';
+            tile.style.top = y * tileSize + 'px';
+            board.appendChild(tile);
+        }
+    }
+
+    // Создаем путь
+    PATH.forEach((pos, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${index === 0 ? 'start' : index === PATH.length-1 ? 'end' : 'path'}`;
+        tile.style.left = pos.x * tileSize + 'px';
+        tile.style.top = pos.y * tileSize + 'px';
+        board.appendChild(tile);
+        pathTiles.push({x: pos.x, y: pos.y});
+    });
+}
+
+// Настройка магазина
+function setupShop() {
+    const shop = document.getElementById('shop');
+    shop.innerHTML = '';
+    
+    Object.values(towerTypes).forEach(tower => {
+        const item = document.createElement('div');
+        item.className = 'shop-item';
+        item.innerHTML = `
+            ${tower.name} (${tower.cost})<br>
+            ${getTowerDescription(tower)}
+        `;
+        item.onclick = () => selectTower(tower.type);
+        shop.appendChild(item);
+    });
+
+    // Добавляем информацию о деньгах и волне
+    const infoDiv = document.createElement('div');
+    infoDiv.innerHTML = `
+        <div id="moneyDisplay">Деньги: ${money}</div>
+        <div id="waveDisplay">Волна: ${currentWave}</div>
+        <button id="showRadiusBtn">Показать радиусы</button>
+    `;
+    shop.appendChild(infoDiv);
+    
+    document.getElementById('showRadiusBtn').addEventListener('click', toggleRadius);
+}
+
+function getTowerDescription(tower) {
+    switch(tower.type) {
+        case 'pistol': return `Урон: 1/сек<br>Радиус: 10st`;
+        case 'swordsman': return `Урон: 2/0.5сек<br>Радиус: 5st`;
+        case 'businessman': return `Доход: 100/5сек<br>Не атакует`;
+        case 'king': return `Создает квадраты<br>Только 1 на карте`;
+        case 'binoculars': return `+5st к радиусу<br>Радиус: 5st`;
+        default: return '';
+    }
+}
+
+// Остальные функции (updateMoney, updateWave, toggleRadius и т.д.) остаются такими же, как в предыдущем коде
+// Не забудьте добавить их все!
+
+// Запуск игры
+window.addEventListener('load', initGame);
 
