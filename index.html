@@ -3,748 +3,829 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шаг за шагом</title>
+    <title>Блочный Мегаполис</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
-            text-align: center;
             background-color: #f5f5f5;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
         }
-        
-        .game-container {
-            background-color: white;
+        #game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 25px;
             border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
-        
         h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            margin: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-weight: bold;
-        }
-        
-        #stepBtn, .shop button {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .battle-actions button {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .stats {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            margin-bottom: 25px;
-            background-color: #ecf0f1;
-            padding: 15px;
-            border-radius: 10px;
-            gap: 10px;
-        }
-        
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 100px;
-        }
-        
-        .hp-bar-container, .enemy-hp-bar-container {
-            width: 100px;
-            height: 20px;
-            background-color: #ecf0f1;
-            border-radius: 10px;
-            margin: 5px 0;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .hp-bar, .enemy-hp-bar {
-            height: 100%;
-            background-color: #2ecc71;
-            width: 100%;
-            transition: width 0.5s;
-        }
-        
-        .enemy-hp-bar {
-            background-color: #e74c3c;
-        }
-        
-        .hp-text, .enemy-hp-text {
-            position: absolute;
-            width: 100%;
             text-align: center;
-            line-height: 20px;
-            font-size: 12px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        #stats {
+            display: flex;
+            justify-content: space-around;
+            background-color: #2c3e50;
             color: white;
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-        }
-        
-        .battle-actions {
-            display: none;
-            margin-top: 25px;
-            background-color: #f8f9fa;
             padding: 15px;
             border-radius: 10px;
-            border: 2px solid #e74c3c;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        
-        .shop {
-            display: none;
-            margin-top: 20px;
-            border: 2px solid #2ecc71;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #f8f9fa;
+        .stat {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
         }
-        
-        .inventory {
-            margin-top: 20px;
+        .stat-icon {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        #shop {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .shop-item {
+            padding: 12px;
             border: 2px solid #3498db;
-            padding: 15px;
-            border-radius: 10px;
+            background-color: white;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .shop-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             background-color: #f8f9fa;
         }
-        
-        .inventory-item {
-            margin: 8px;
-            padding: 8px 12px;
+        .shop-item:active {
+            transform: translateY(1px);
+        }
+        .shop-item.selected {
             background-color: #3498db;
             color: white;
-            border-radius: 20px;
-            display: inline-block;
+            border-color: #2980b9;
+        }
+        #boards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+        }
+        .board-container {
+            position: relative;
+        }
+        .board-title {
+            text-align: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+        .board {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            border: 3px solid #95a5a6;
+            background-color: #ecf0f1;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .board.dirty {
+            background-color: #d5dbdb;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        .block {
+            position: absolute;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.2s;
         }
-        
-        .inventory-item:hover {
-            background-color: #2980b9;
+        .block:hover {
             transform: scale(1.05);
+            z-index: 10;
         }
-        
-        #log {
-            margin-top: 20px;
-            max-height: 150px;
-            overflow-y: auto;
-            padding: 10px;
+        .basic-block {
+            background-color: #2ecc71;
+            border: 2px solid #27ae60;
+        }
+        .metal-block {
+            background-color: #95a5a6;
+            border: 2px solid #7f8c8d;
+        }
+        .pump {
+            background-color: #1abc9c;
+            border: 2px solid #16a085;
+        }
+        .mover {
+            background-color: #e74c3c;
+            border: 2px solid #c0392b;
+            border-radius: 50%;
+        }
+        .mech-pump {
+            background-color: #3498db;
+            border: 2px solid #2980b9;
+        }
+        .water-pump {
+            background-color: #9b59b6;
+            border: 2px solid #8e44ad;
+            border-radius: 50%;
+        }
+        .trigger {
+            background-color: #f39c12;
+            border: 2px solid #d35400;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        .construction-block {
+            background-color: #34495e;
+            border: 2px solid #2c3e50;
+        }
+        .bank {
+            background-color: #f1c40f;
+            border: 2px solid #f39c12;
+        }
+        .house {
+            background-color: #e74c3c;
+            border: 2px solid #c0392b;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%23ffffff" d="M50 10L90 50H75V90H60V70H40V90H25V50H10L50 10z"/></svg>');
+            background-size: 60%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .dirty-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+        .delete-mode {
+            background-color: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+        }
+        .progress-bar {
+            height: 5px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #2ecc71;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #money-bar {
+            position: relative;
+            height: 10px;
             background-color: #ecf0f1;
             border-radius: 5px;
-            text-align: left;
-        }
-        
-        .log-entry {
-            margin: 5px 0;
-            padding: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .enemy-info {
-            margin: 15px 0;
-            font-weight: bold;
-        }
-        
-        .mining-container {
-            display: none;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f39c12;
-            border-radius: 5px;
-            color: white;
-        }
-        
-        .mining-progress {
-            height: 20px;
-            background-color: #d35400;
-            border-radius: 10px;
             margin-top: 10px;
             overflow: hidden;
         }
-        
-        .mining-progress-bar {
+        #money-fill {
             height: 100%;
-            background-color: #f1c40f;
+            background-color: #2ecc71;
             width: 0%;
             transition: width 0.3s;
+        }
+        #money-limit {
+            position: absolute;
+            right: 0;
+            top: -20px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .water-pump-clicks {
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #9b59b6;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>Шаг за шагом</h1>
+    <div id="game-container">
+        <h1>🌆 Блочный Мегаполис</h1>
         
-        <div class="stats">
-            <div class="stat-item">
-                <div>Шаги</div>
-                <div id="steps">0</div>
-            </div>
-            <div class="stat-item">
-                <div>Монеты</div>
-                <div id="coins">0</div>
-            </div>
-            <div class="stat-item">
-                <div>Здоровье</div>
-                <div class="hp-bar-container">
-                    <div class="hp-bar" id="hpBar"></div>
-                    <div class="hp-text" id="hpText">5/5</div>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div>Урон</div>
-                <div id="damage">1</div>
-            </div>
-            <div class="stat-item">
-                <div>Защита</div>
-                <div id="defense">0%</div>
-            </div>
+        <div id="stats">
+            <div class="stat"><span class="stat-icon">💰</span> Деньги: $<span id="money">3</span></div>
+            <div class="stat"><span class="stat-icon">📈</span> Доход/сек: $<span id="income">0</span></div>
+            <div class="stat"><span class="stat-icon">🏦</span> В банке: $<span id="bank-money">0</span></div>
         </div>
         
-        <button id="stepBtn">СДЕЛАТЬ ШАГ</button>
-        
-        <div class="battle-actions" id="battleActions">
-            <h2>⚔️ Битва! ⚔️</h2>
-            <div class="enemy-info">
-                <p>Враг: <span id="enemyHpText">5</span> HP</p>
-                <p>Урон: 1</p>
-            </div>
-            <div class="enemy-hp-bar-container">
-                <div class="enemy-hp-bar" id="enemyHpBar"></div>
-                <div class="enemy-hp-text" id="enemyHpFullText">5/5</div>
-            </div>
-            <div>
-                <button id="attackBtn">Атаковать</button>
-                <button id="defendBtn">Защищаться</button>
-                <button id="dodgeBtn">Увернуться (<span id="dodgesLeft">3</span>)</button>
-            </div>
+        <div id="money-bar">
+            <div id="money-fill"></div>
+            <div id="money-limit">Лимит: $5000</div>
         </div>
         
-        <div class="mining-container" id="miningContainer">
-            <h3>⛏️ Найден минерал!</h3>
-            <p>Кликните по кирке в инвентаре, чтобы добыть (40 кликов)</p>
-            <div class="mining-progress">
-                <div class="mining-progress-bar" id="miningProgress"></div>
+        <div id="shop">
+            <div class="shop-item" data-type="basic-block" data-cost="1">Базовый блок ($1)</div>
+            <div class="shop-item" data-type="metal-block" data-cost="5">Метал. блок ($5)</div>
+            <div class="shop-item" data-type="pump" data-cost="16">Насос ($16)</div>
+            <div class="shop-item" data-type="mover" data-cost="40">Мув ($40)</div>
+            <div class="shop-item" data-type="water-pump" data-cost="60">Водоносос ($60)</div>
+            <div class="shop-item" data-type="mech-pump" data-cost="100">Мех. насос ($100)</div>
+            <div class="shop-item" data-type="trigger" data-cost="225">Триггер ($225)</div>
+            <div class="shop-item" data-type="construction-block" data-cost="10">Стройблок ($10)</div>
+            <div class="shop-item" data-type="bank" data-cost="300">Банк ($300)</div>
+            <div class="shop-item" data-type="house" data-cost="1250">Дом ($1250)</div>
+            <div class="shop-item" data-type="new-board" data-cost="1000">Новая площадка ($1000)</div>
+            <div class="shop-item" id="delete-btn">🗑️ Удаление</div>
+        </div>
+        
+        <div id="boards-container">
+            <div class="board-container">
+                <div class="board-title">Площадка 1</div>
+                <div class="board" id="board-1"></div>
             </div>
         </div>
-        
-        <div class="shop" id="shop">
-            <h2>🛒 Магазин</h2>
-            <button id="swordBtn">🗡️ Меч (150 монет) - 4 урона</button>
-            <button id="bowBtn">🏹 Лук (300 монет) - 3-6 урона</button>
-            <button id="glovesBtn">🧤 Перчатки (100 монет) - +2 урона</button>
-            <button id="armorBtn">🛡️ Железная броня (200 монет) - 20% защиты</button>
-            <button id="healthBtn">❤️ +1 к Макс ХП (25 монет)</button>
-            <button id="lifeOrbBtn">🔵 Сфера жизни (50 монет) - +10 ХП</button>
-            <button id="healthPotionBtn">🧪 Зелье здоровья (150 монет) - +100 ХП</button>
-            <button id="rageOrbBtn">🔴 Сфера ярости (25 монет) - следующий удар x2</button>
-            <button id="pickaxeBtn">⛏️ Кирка (10 монет) - добыча минералов</button>
-            <div id="chestContainer"></div>
-        </div>
-        
-        <div class="inventory" id="inventory">
-            <h3>🎒 Инвентарь</h3>
-            <div id="inventoryItems">Пусто</div>
-        </div>
-        
-        <div id="log"></div>
     </div>
-    
+
     <script>
         // Игровые переменные
-        let steps = 0;
-        let coins = 0;
-        let health = 5;
-        let maxHealth = 5;
-        let baseDamage = 1;
-        let damageModifier = 0;
-        let inBattle = false;
-        let enemyHealth = 0;
-        let enemyMaxHealth = 5;
-        let enemyDamage = 1;
-        let dodgesLeft = 3;
-        let isPlayerTurn = true;
-        let defendMode = false;
-        let inventory = [];
-        let rageActive = false;
-        let enemyAttackTimeout = null;
-        let defense = 0;
-        let miningActive = false;
-        let miningProgress = 0;
-        let miningRequired = 40;
-        let chestFound = false;
+        let money = 3;
+        let income = 0;
+        let bankMoney = 0;
+        const MONEY_LIMIT = 5000;
+        let selectedItem = null;
+        let deleteMode = false;
+        let boards = [
+            { id: 1, element: null, blocks: [], width: 300, height: 200, dirty: false, dirtyTimer: null }
+        ];
+        let nextBoardId = 2;
+        let waterPumpClicks = {};
         
-        // Элементы DOM
-        const stepBtn = document.getElementById('stepBtn');
-        const battleActions = document.getElementById('battleActions');
-        const attackBtn = document.getElementById('attackBtn');
-        const defendBtn = document.getElementById('defendBtn');
-        const dodgeBtn = document.getElementById('dodgeBtn');
-        const shop = document.getElementById('shop');
-        const glovesBtn = document.getElementById('glovesBtn');
-        const swordBtn = document.getElementById('swordBtn');
-        const bowBtn = document.getElementById('bowBtn');
-        const armorBtn = document.getElementById('armorBtn');
-        const healthBtn = document.getElementById('healthBtn');
-        const lifeOrbBtn = document.getElementById('lifeOrbBtn');
-        const healthPotionBtn = document.getElementById('healthPotionBtn');
-        const rageOrbBtn = document.getElementById('rageOrbBtn');
-        const pickaxeBtn = document.getElementById('pickaxeBtn');
-        const miningContainer = document.getElementById('miningContainer');
-        const chestContainer = document.getElementById('chestContainer');
-        
-        // Функции обновления интерфейса
-        function updateUI() {
-            document.getElementById('steps').textContent = steps;
-            document.getElementById('coins').textContent = coins;
-            document.getElementById('defense').textContent = `${defense}%`;
+        // Инициализация игры
+        function initGame() {
+            // Получаем элементы DOM
+            const moneyElement = document.getElementById('money');
+            const incomeElement = document.getElementById('income');
+            const bankMoneyElement = document.getElementById('bank-money');
+            const shopItems = document.querySelectorAll('.shop-item');
+            const deleteBtn = document.getElementById('delete-btn');
+            const boardsContainer = document.getElementById('boards-container');
+            const moneyFill = document.getElementById('money-fill');
             
-            // Рассчет урона
-            const damage = baseDamage + damageModifier;
-            document.getElementById('damage').textContent = damage > 1 ? `${damage} (${baseDamage}+${damageModifier})` : damage;
+            // Инициализируем первую площадку
+            boards[0].element = document.getElementById('board-1');
             
-            // Обновление HP игрока
-            const hpPercent = (health / maxHealth) * 100;
-            document.getElementById('hpBar').style.width = `${hpPercent}%`;
-            document.getElementById('hpText').textContent = `${health}/${maxHealth}`;
-            
-            // Обновление HP врага
-            if (inBattle) {
-                const enemyHpPercent = (enemyHealth / enemyMaxHealth) * 100;
-                document.getElementById('enemyHpBar').style.width = `${enemyHpPercent}%`;
-                document.getElementById('enemyHpText').textContent = enemyHealth;
-                document.getElementById('enemyHpFullText').textContent = `${enemyHealth}/${enemyMaxHealth}`;
+            // Обновляем отображение денег и дохода
+            function updateStats() {
+                moneyElement.textContent = money.toFixed(2);
+                incomeElement.textContent = income.toFixed(2);
+                bankMoneyElement.textContent = bankMoney.toFixed(2);
+                
+                // Обновляем прогресс-бар денег
+                const moneyPercent = (money / MONEY_LIMIT) * 100;
+                moneyFill.style.width = `${Math.min(moneyPercent, 100)}%`;
+                
+                if (moneyPercent > 80) {
+                    moneyFill.style.backgroundColor = '#e74c3c';
+                } else if (moneyPercent > 50) {
+                    moneyFill.style.backgroundColor = '#f39c12';
+                } else {
+                    moneyFill.style.backgroundColor = '#2ecc71';
+                }
             }
             
-            // Обновление инвентаря
-            const inventoryItems = document.getElementById('inventoryItems');
-            if (inventory.length === 0) {
-                inventoryItems.innerHTML = 'Пусто';
-            } else {
-                inventoryItems.innerHTML = '';
-                inventory.forEach(item => {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'inventory-item';
-                    itemEl.textContent = item;
+            // Обработчики для магазина
+            shopItems.forEach(item => {
+                if (item.id !== 'delete-btn') {
+                    item.addEventListener('click', () => {
+                        const type = item.dataset.type;
+                        const cost = parseFloat(item.dataset.cost);
+                        
+                        if (money >= cost) {
+                            // Снимаем выделение со всех элементов
+                            shopItems.forEach(i => i.classList.remove('selected'));
+                            // Выделяем текущий элемент
+                            item.classList.add('selected');
+                            
+                            selectedItem = type;
+                            deleteMode = false;
+                            deleteBtn.classList.remove('delete-mode');
+                        } else {
+                            alert('Недостаточно денег!');
+                        }
+                    });
+                }
+            });
+            
+            // Обработчик для кнопки удаления
+            deleteBtn.addEventListener('click', () => {
+                deleteMode = !deleteMode;
+                if (deleteMode) {
+                    // Снимаем выделение со всех элементов магазина
+                    shopItems.forEach(i => i.classList.remove('selected'));
+                    deleteBtn.classList.add('delete-mode');
+                    selectedItem = null;
+                } else {
+                    deleteBtn.classList.remove('delete-mode');
+                }
+            });
+            
+            // Обработчики для площадок
+            boards.forEach(board => {
+                board.element.addEventListener('click', (e) => {
+                    const rect = board.element.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
                     
-                    // Особые действия для некоторых предметов
-                    if (item === 'Кирка' && miningActive) {
-                        itemEl.style.backgroundColor = '#f39c12';
-                        itemEl.onclick = () => mineMineral();
-                    } else if (item === 'Сфера жизни' || item === 'Сфера ярости' || item === 'Зелье здоровья') {
-                        itemEl.onclick = () => useItem(item);
-                    } else {
-                        itemEl.style.cursor = 'default';
+                    if (deleteMode) {
+                        // Удаление объекта
+                        deleteBlock(board, x, y);
+                    } else if (selectedItem) {
+                        // Размещение объекта
+                        placeBlock(board, selectedItem, x, y);
                     }
+                });
+            });
+            
+            // Функция удаления блока
+            function deleteBlock(board, x, y) {
+                for (let i = board.blocks.length - 1; i >= 0; i--) {
+                    const block = board.blocks[i];
+                    const blockRect = block.element.getBoundingClientRect();
+                    const blockX = blockRect.left - board.element.getBoundingClientRect().left;
+                    const blockY = blockRect.top - board.element.getBoundingClientRect().top;
+                    const blockWidth = blockRect.width;
+                    const blockHeight = blockRect.height;
                     
-                    inventoryItems.appendChild(itemEl);
+                    if (x >= blockX && x <= blockX + blockWidth &&
+                        y >= blockY && y <= blockY + blockHeight) {
+                        // Удаляем блок
+                        board.element.removeChild(block.element);
+                        clearInterval(block.interval);
+                        board.blocks.splice(i, 1);
+                        
+                        // Если это был водоносос, удаляем его из списка кликов
+                        if (block.type === 'water-pump') {
+                            delete waterPumpClicks[block.id];
+                        }
+                        
+                        updateIncome();
+                        return;
+                    }
+                }
+            }
+            
+            // Функция для размещения блока
+            function placeBlock(board, type, x, y) {
+                const cost = getCostForType(type);
+                if (money < cost) {
+                    alert('Недостаточно денег!');
+                    return;
+                }
+                
+                // Проверяем, можно ли разместить здесь блок
+                if (!canPlaceBlock(board, type, x, y)) {
+                    alert('Здесь нельзя разместить этот блок!');
+                    return;
+                }
+                
+                money -= cost;
+                updateStats();
+                
+                const blockElement = document.createElement('div');
+                blockElement.className = 'block';
+                
+                let size = getSizeForType(type);
+                let blockData = { 
+                    id: Date.now() + Math.random().toString(36).substr(2, 9),
+                    type: type, 
+                    element: blockElement, 
+                    x: x, 
+                    y: y, 
+                    size: size,
+                    income: 0,
+                    interval: null,
+                    direction: type === 'trigger' ? Math.random() * Math.PI * 2 : 0
+                };
+                
+                // Настройка в зависимости от типа
+                configureBlock(blockElement, blockData, board);
+                
+                board.element.appendChild(blockElement);
+                board.blocks.push(blockData);
+                
+                // Для водонососа добавляем счетчик кликов
+                if (type === 'water-pump') {
+                    waterPumpClicks[blockData.id] = 0;
+                    updateWaterPumpDisplay(blockData);
+                    
+                    // Обработчик кликов на водоносос
+                    blockElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (waterPumpClicks[blockData.id] < 5) {
+                            waterPumpClicks[blockData.id]++;
+                            updateWaterPumpDisplay(blockData);
+                        }
+                    });
+                }
+                
+                // Для банка добавляем обработчик кликов
+                if (type === 'bank') {
+                    blockElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const amount = parseFloat(prompt(`Сколько денег положить в банк? (Доступно: $${money.toFixed(2)})`, Math.min(money, 100).toFixed(2)));
+                        if (!isNaN(amount) && amount > 0 && amount <= money) {
+                            money -= amount;
+                            bankMoney += amount;
+                            updateStats();
+                        }
+                    });
+                }
+                
+                // Запускаем таймер загрязнения для механизмов (кроме водонососа)
+                if (type !== 'water-pump' && type !== 'construction-block' && type !== 'basic-block' && type !== 'metal-block') {
+                    if (board.dirtyTimer) {
+                        clearTimeout(board.dirtyTimer);
+                    }
+                    board.dirtyTimer = setTimeout(() => {
+                        board.dirty = true;
+                        board.element.classList.add('dirty');
+                        updateIncome();
+                    }, 60000); // 1 минута
+                }
+                
+                updateIncome();
+            }
+            
+            // Проверка, можно ли разместить блок в этом месте
+            function canPlaceBlock(board, type, x, y) {
+                const size = getSizeForType(type);
+                
+                // Проверяем границы площадки
+                if (x - size/2 < 0 || x + size/2 > board.width || 
+                    y - size/2 < 0 || y + size/2 > board.height) {
+                    return false;
+                }
+                
+                // Проверяем пересечение с другими блоками
+                for (const block of board.blocks) {
+                    const blockSize = block.size;
+                    const distance = Math.sqrt(
+                        Math.pow(block.x - x, 2) + 
+                        Math.pow(block.y - y, 2)
+                    );
+                    
+                    if (distance < (size/2 + blockSize/2)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            // Получить размер блока по типу
+            function getSizeForType(type) {
+                switch (type) {
+                    case 'basic-block':
+                    case 'metal-block':
+                    case 'pump':
+                    case 'mover':
+                    case 'water-pump':
+                    case 'trigger':
+                        return 20;
+                    case 'construction-block':
+                        return 15;
+                    case 'mech-pump':
+                        return 40;
+                    case 'bank':
+                        return 50;
+                    case 'house':
+                        return 60;
+                    default:
+                        return 20;
+                }
+            }
+            
+            // Получить стоимость по типу
+            function getCostForType(type) {
+                switch (type) {
+                    case 'basic-block': return 1;
+                    case 'metal-block': return 5;
+                    case 'pump': return 16;
+                    case 'mover': return 40;
+                    case 'water-pump': return 60;
+                    case 'mech-pump': return 100;
+                    case 'trigger': return 225;
+                    case 'construction-block': return 10;
+                    case 'bank': return 300;
+                    case 'house': return 1250;
+                    case 'new-board': return 1000;
+                    default: return 0;
+                }
+            }
+            
+            // Настроить блок в зависимости от типа
+            function configureBlock(element, blockData, board) {
+                const { type, x, y, size } = blockData;
+                
+                element.classList.add(getClassForType(type));
+                element.style.width = `${size}px`;
+                element.style.height = `${size}px`;
+                element.style.left = `${x - size/2}px`;
+                element.style.top = `${y - size/2}px`;
+                
+                switch (type) {
+                    case 'basic-block':
+                        // Базовый блок - 20% шанс на $1 каждую секунду
+                        blockData.interval = setInterval(() => {
+                            if (Math.random() < 0.2) {
+                                addMoney(1);
+                            }
+                        }, 1000);
+                        break;
+                        
+                    case 'metal-block':
+                        // Металлический блок - $1 каждые 5 секунд
+                        blockData.income = 1;
+                        blockData.interval = setInterval(() => {
+                            addMoney(blockData.income);
+                        }, 5000);
+                        break;
+                        
+                    case 'pump':
+                        // Насос - $1 каждые 2 секунды
+                        blockData.income = 1;
+                        blockData.interval = setInterval(() => {
+                            addMoney(blockData.income);
+                        }, 2000);
+                        break;
+                        
+                    case 'mover':
+                        // Мув - удваивает доход блоков в радиусе
+                        blockData.interval = setInterval(() => {
+                            const blocksInRadius = getBlocksInRadius(board, x, y, 5);
+                            blocksInRadius.forEach(block => {
+                                if (block.type === 'basic-block' || block.type === 'metal-block') {
+                                    block.income *= 2;
+                                }
+                            });
+                            updateIncome();
+                        }, 1000);
+                        break;
+                        
+                    case 'water-pump':
+                        // Водоносос - очищает зону при кликах
+                        blockData.interval = setInterval(() => {
+                            if (waterPumpClicks[blockData.id] > 0) {
+                                cleanArea(board, x, y, 20);
+                                waterPumpClicks[blockData.id]--;
+                                updateWaterPumpDisplay(blockData);
+                            }
+                        }, 1000);
+                        break;
+                        
+                    case 'mech-pump':
+                        // Механический насос - $5 каждую секунду
+                        blockData.income = 5;
+                        blockData.interval = setInterval(() => {
+                            addMoney(blockData.income);
+                        }, 1000);
+                        break;
+                        
+                    case 'trigger':
+                        // Триггер - двигает блоки
+                        blockData.interval = setInterval(() => {
+                            moveConstructionBlocks(board, blockData);
+                        }, 100);
+                        break;
+                        
+                    case 'house':
+                        // Дом - $1-20 каждую секунду
+                        blockData.interval = setInterval(() => {
+                            const randomIncome = 1 + Math.floor(Math.random() * 20);
+                            addMoney(randomIncome);
+                        }, 1000);
+                        break;
+                }
+            }
+            
+            // Очистить зону вокруг водонососа
+            function cleanArea(board, x, y, radius) {
+                let cleaned = false;
+                
+                // Очищаем площадку
+                if (board.dirty) {
+                    board.dirty = false;
+                    board.element.classList.remove('dirty');
+                    if (board.dirtyTimer) {
+                        clearTimeout(board.dirtyTimer);
+                        board.dirtyTimer = null;
+                    }
+                    cleaned = true;
+                }
+                
+                // Очищаем блоки в радиусе
+                const blocksInRadius = getBlocksInRadius(board, x, y, radius);
+                blocksInRadius.forEach(block => {
+                    if (block.dirty) {
+                        block.dirty = false;
+                        if (block.element.querySelector('.dirty-overlay')) {
+                            block.element.removeChild(block.element.querySelector('.dirty-overlay'));
+                        }
+                        cleaned = true;
+                    }
+                });
+                
+                if (cleaned) {
+                    updateIncome();
+                }
+            }
+            
+            // Двигать строительные блоки с триггера
+            function moveConstructionBlocks(board, trigger) {
+                const blocksInRadius = getBlocksInRadius(board, trigger.x, trigger.y, trigger.size/2);
+                
+                blocksInRadius.forEach(block => {
+                    if (block.type === 'construction-block') {
+                        // Двигаем блок в направлении триггера
+                        const speed = 1;
+                        block.x += Math.cos(trigger.direction) * speed;
+                        block.y += Math.sin(trigger.direction) * speed;
+                        
+                        // Обновляем позицию на экране
+                        block.element.style.left = `${block.x - block.size/2}px`;
+                        block.element.style.top = `${block.y - block.size/2}px`;
+                        
+                        // Если блок выходит за границы, меняем направление
+                        if (block.x < block.size/2 || block.x > board.width - block.size/2 ||
+                            block.y < block.size/2 || block.y > board.height - block.size/2) {
+                            trigger.direction = Math.random() * Math.PI * 2;
+                        }
+                    }
                 });
             }
             
-            // Показать/скрыть магазин каждые 10 шагов
-            if (steps > 0 && steps % 10 === 0 && !inBattle && !miningActive) {
-                shop.style.display = 'block';
-                
-                // 50% шанс найти сундук
-                if (!chestFound && Math.random() < 0.5) {
-                    chestContainer.innerHTML = '<button id="chestBtn" style="background-color:#f1c40f;color:#000;">🎁 Сундук (100 монет)</button>';
-                    document.getElementById('chestBtn').addEventListener('click', openChest);
-                    chestFound = true;
+            // Получить класс CSS для типа блока
+            function getClassForType(type) {
+                switch (type) {
+                    case 'basic-block': return 'basic-block';
+                    case 'metal-block': return 'metal-block';
+                    case 'pump': return 'pump';
+                    case 'mover': return 'mover';
+                    case 'water-pump': return 'water-pump';
+                    case 'mech-pump': return 'mech-pump';
+                    case 'trigger': return 'trigger';
+                    case 'construction-block': return 'construction-block';
+                    case 'bank': return 'bank';
+                    case 'house': return 'house';
+                    default: return '';
                 }
-            } else {
-                shop.style.display = 'none';
             }
             
-            // Блокировка кнопок во время хода врага
-            attackBtn.disabled = !isPlayerTurn || !inBattle;
-            defendBtn.disabled = !isPlayerTurn || !inBattle;
-            dodgeBtn.disabled = !inBattle || dodgesLeft <= 0;
+            // Получить блоки в радиусе
+            function getBlocksInRadius(board, x, y, radius) {
+                return board.blocks.filter(block => {
+                    const distance = Math.sqrt(
+                        Math.pow(block.x - x, 2) + 
+                        Math.pow(block.y - y, 2)
+                    );
+                    return distance <= radius + block.size/2;
+                });
+            }
+            
+            // Обновить общий доход
+            function updateIncome() {
+                income = 0;
+                
+                boards.forEach(board => {
+                    const dirtyMultiplier = board.dirty ? 0.5 : 1;
+                    
+                    board.blocks.forEach(block => {
+                        if (block.dirty) {
+                            return; // Грязные блоки не приносят дохода
+                        }
+                        
+                        switch (block.type) {
+                            case 'basic-block':
+                                income += 0.2 * dirtyMultiplier; // 20% chance per second for $1
+                                break;
+                            case 'metal-block':
+                                income += (block.income / 5) * dirtyMultiplier;
+                                break;
+                            case 'pump':
+                                income += (block.income / 2) * dirtyMultiplier;
+                                break;
+                            case 'mech-pump':
+                                income += block.income * dirtyMultiplier;
+                                break;
+                            case 'house':
+                                income += 10.5 * dirtyMultiplier; // Среднее значение 1-20
+                                break;
+                        }
+                    });
+                });
+                
+                updateStats();
+            }
+            
+            // Добавить деньги с проверкой лимита
+            function addMoney(amount) {
+                money = Math.min(money + amount, MONEY_LIMIT);
+                updateStats();
+            }
+            
+            // Обновить отображение кликов водонососа
+            function updateWaterPumpDisplay(blockData) {
+                const clicksDisplay = blockData.element.querySelector('.water-pump-clicks') || document.createElement('div');
+                clicksDisplay.className = 'water-pump-clicks';
+                clicksDisplay.textContent = `⚡${waterPumpClicks[blockData.id]}/5`;
+                
+                if (!blockData.element.querySelector('.water-pump-clicks')) {
+                    blockData.element.appendChild(clicksDisplay);
+                }
+            }
+            
+            // Создать новую площадку
+            function createNewBoard() {
+                if (money >= 1000) {
+                    money -= 1000;
+                    updateStats();
+                    
+                    const boardId = nextBoardId++;
+                    const boardContainer = document.createElement('div');
+                    boardContainer.className = 'board-container';
+                    
+                    const boardTitle = document.createElement('div');
+                    boardTitle.className = 'board-title';
+                    boardTitle.textContent = `Площадка ${boardId}`;
+                    
+                    const boardElement = document.createElement('div');
+                    boardElement.className = 'board';
+                    boardElement.id = `board-${boardId}`;
+                    
+                    boardContainer.appendChild(boardTitle);
+                    boardContainer.appendChild(boardElement);
+                    document.getElementById('boards-container').appendChild(boardContainer);
+                    
+                    const newBoard = {
+                        id: boardId,
+                        element: boardElement,
+                        blocks: [],
+                        width: 300,
+                        height: 200,
+                        dirty: false,
+                        dirtyTimer: null
+                    };
+                    
+                    boards.push(newBoard);
+                    
+                    // Добавляем обработчик кликов для новой площадки
+                    boardElement.addEventListener('click', (e) => {
+                        const rect = boardElement.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        if (deleteMode) {
+                            deleteBlock(newBoard, x, y);
+                        } else if (selectedItem) {
+                            placeBlock(newBoard, selectedItem, x, y);
+                        }
+                    });
+                } else {
+                    alert('Недостаточно денег для новой площадки!');
+                }
+            }
+            
+            // Обработчик для создания новой площадки
+            document.querySelector('.shop-item[data-type="new-board"]').addEventListener('click', createNewBoard);
+            
+            // Игровой цикл
+            setInterval(() => {
+                // Автоматическое накопление в банке (1% в секунду)
+                if (bankMoney > 0) {
+                    const interest = bankMoney * 0.01;
+                    bankMoney += interest;
+                    updateStats();
+                }
+            }, 1000);
         }
         
-        // Функция добавления сообщения в лог
-        function addLog(message) {
-            const log = document.getElementById('log');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.textContent = message;
-            log.prepend(entry);
-            
-            // Ограничение количества записей в логе
-            if (log.children.length > 10) {
-                log.removeChild(log.lastChild);
-            }
-        }
-        
-        // Функция шага
-        function makeStep() {
-            if (inBattle || miningActive) return;
-            
-            steps++;
-            chestFound = false;
-            
-            // Получение монет
-            const coinsEarned = Math.floor(Math.random() * 25) + 1;
-            coins += coinsEarned;
-            addLog(`Вы сделали шаг и получили ${coinsEarned} монет!`);
-            
-            // Проверка на встречу с врагом (30% шанс)
-            if (Math.random() < 0.3) {
-                startBattle();
-            }
-            
-            // Проверка на нахождение минерала (5% шанс, если есть кирка)
-            if (inventory.includes('Кирка') && Math.random() < 0.05) {
-                startMining();
-            }
-            
-            updateUI();
-        }
-        
-        // Функция начала битвы
-        function startBattle() {
-            inBattle = true;
-            
-            // Увеличение здоровья врага в зависимости от пройденных шагов
-            if (steps >= 60) {
-                enemyMaxHealth = 35;
-                enemyDamage = 3;
-            } else if (steps >= 20) {
-                enemyMaxHealth = 15;
-                enemyDamage = 2;
-            } else {
-                enemyMaxHealth = 5;
-                enemyDamage = 1;
-            }
-            
-            enemyHealth = enemyMaxHealth;
-            dodgesLeft = 3;
-            isPlayerTurn = true;
-            defendMode = false;
-            
-            battleActions.style.display = 'block';
-            stepBtn.disabled = true;
-            
-            addLog(`Вы встретили врага! (${enemyMaxHealth} HP, Урон: ${enemyDamage}) Начинается битва!`);
-            updateUI();
-        }
-        
-        // Функция окончания битвы
-        function endBattle() {
-            inBattle = false;
-            battleActions.style.display = 'none';
-            stepBtn.disabled = false;
-            
-            // Очистка таймера атаки врага
-            if (enemyAttackTimeout) {
-                clearTimeout(enemyAttackTimeout);
-                enemyAttackTimeout = null;
-            }
-            
-            updateUI();
-        }
-        
-        // Функция атаки игрока
-        function playerAttack() {
-            if (!isPlayerTurn || !inBattle) return;
-            
-            let attackDamage = baseDamage + damageModifier;
-            if (rageActive) {
-                attackDamage *= 2;
-                rageActive = false;
-                addLog('Сфера ярости активирована! Урон удвоен!');
-            }
-            
-            // Для лука - случайный урон от 3 до 6
-            if (inventory.includes('Лук')) {
-                attackDamage = Math.floor(Math.random() * 4) + 3;
-                addLog(`Вы стреляете из лука и наносите ${attackDamage} урона!`);
-            } else {
-                addLog(`Вы атакуете врага и наносите ${attackDamage} урона!`);
-            }
-            
-            enemyHealth -= attackDamage;
-            
-            if (enemyHealth <= 0) {
-                enemyHealth = 0;
-                addLog('Вы победили врага!');
-                endBattle();
-                return;
-            }
-            
-            isPlayerTurn = false;
-            updateUI();
-            
-            // Ход врага через 3 секунды
-            enemyAttackTimeout = setTimeout(enemyTurn, 3000);
-        }
-        
-        // Функция защиты игрока
-        function playerDefend() {
-            if (!isPlayerTurn || !inBattle) return;
-            
-            defendMode = true;
-            addLog('Вы готовитесь к защите!');
-            
-            isPlayerTurn = false;
-            updateUI();
-            
-            // Ход врага через 3 секунды
-            enemyAttackTimeout = setTimeout(enemyTurn, 3000);
-        }
-        
-        // Функция уворота игрока
-        function playerDodge() {
-            if (!inBattle || dodgesLeft <= 0) return;
-            
-            dodgesLeft--;
-            addLog('Вы увернулись от атаки врага!');
-            
-            // Если увернулись во время хода врага, отменяем его атаку
-            if (!isPlayerTurn && enemyAttackTimeout) {
-                clearTimeout(enemyAttackTimeout);
-                isPlayerTurn = true;
-                addLog('Вы перехватили инициативу!');
-            }
-            
-            updateUI();
-        }
-        
-        // Ход врага
-        function enemyTurn() {
-            if (!inBattle) return;
-            
-            let damageTaken = enemyDamage;
-            
-            // Учет защиты
-            if (defense > 0) {
-                const damageReduction = Math.floor(damageTaken * (defense / 100));
-                damageTaken -= damageReduction;
-                addLog(`Ваша броня уменьшила урон на ${damageReduction}!`);
-            }
-            
-            if (defendMode) {
-                damageTaken = Math.max(1, Math.floor(damageTaken * 0.5));
-                addLog(`Враг атакует, но вы заблокировали часть урона! (Получено ${damageTaken} урона)`);
-                defendMode = false;
-            } else {
-                addLog(`Враг атакует и наносит ${damageTaken} урона!`);
-            }
-            
-            health -= damageTaken;
-            
-            if (health <= 0) {
-                health = 0;
-                addLog('Вы проиграли! Игра окончена.');
-                endBattle();
-                stepBtn.disabled = true;
-                return;
-            }
-            
-            isPlayerTurn = true;
-            updateUI();
-        }
-        
-        // Функция использования предмета из инвентаря
-        function useItem(item) {
-            if (item === 'Сфера жизни') {
-                health = Math.min(health + 10, maxHealth);
-                inventory = inventory.filter(i => i !== item);
-                addLog('Вы использовали Сферу жизни и восстановили 10 HP!');
-            } else if (item === 'Сфера ярости') {
-                rageActive = true;
-                inventory = inventory.filter(i => i !== item);
-                addLog('Вы активировали Сферу ярости! Следующая атака будет сильнее!');
-            } else if (item === 'Зелье здоровья') {
-                health = maxHealth;
-                inventory = inventory.filter(i => i !== item);
-                addLog('Вы использовали Зелье здоровья и полностью восстановили HP!');
-            }
-            
-            updateUI();
-        }
-        
-        // Функция начала добычи минерала
-        function startMining() {
-            miningActive = true;
-            miningProgress = 0;
-            miningContainer.style.display = 'block';
-            addLog('Вы нашли минерал! Используйте кирку из инвентаря, чтобы добыть его.');
-            updateUI();
-        }
-        
-        // Функция добычи минерала
-        function mineMineral() {
-            if (!miningActive) return;
-            
-            miningProgress++;
-            document.getElementById('miningProgress').style.width = `${(miningProgress / miningRequired) * 100}%`;
-            
-            if (miningProgress >= miningRequired) {
-                const minedCoins = Math.floor(Math.random() * 66) + 60;
-                coins += minedCoins;
-                addLog(`Вы добыли минерал и получили ${minedCoins} монет!`);
-                miningActive = false;
-                miningContainer.style.display = 'none';
-            }
-            
-            updateUI();
-        }
-        
-        // Функция открытия сундука
-        function openChest() {
-            coins += 100;
-            addLog('Вы нашли сундук с 100 монетами!');
-            chestContainer.innerHTML = '';
-            updateUI();
-        }
-        
-        // Покупки в магазине
-        function buySword() {
-            if (coins >= 150) {
-                coins -= 150;
-                baseDamage = 4; // Урон не суммируется, заменяется
-                damageModifier = 0;
-                addLog('Вы купили меч! Теперь ваш урон 4.');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки меча!');
-            }
-        }
-        
-        function buyBow() {
-            if (coins >= 300) {
-                coins -= 300;
-                baseDamage = 3; // Минимальный урон лука
-                damageModifier = 3; // Максимальный урон будет 6 (3+3)
-                addLog('Вы купили лук! Теперь ваш урон 3-6.');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки лука!');
-            }
-        }
-        
-        function buyGloves() {
-            if (coins >= 100) {
-                coins -= 100;
-                damageModifier += 2;
-                addLog('Вы купили перчатки! Урон увеличен на 2.');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки перчаток!');
-            }
-        }
-        
-        function buyArmor() {
-            if (coins >= 200) {
-                coins -= 200;
-                defense = 20;
-                addLog('Вы купили железную броню! Теперь вы получаете на 20% меньше урона.');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки брони!');
-            }
-        }
-        
-        function buyHealthUpgrade() {
-            if (coins >= 25) {
-                coins -= 25;
-                maxHealth += 1;
-                health += 1;
-                addLog('Вы увеличили максимальное здоровье на 1!');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для увеличения здоровья!');
-            }
-        }
-        
-        function buyLifeOrb() {
-            if (coins >= 50) {
-                coins -= 50;
-                inventory.push('Сфера жизни');
-                addLog('Вы купили Сферу жизни!');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки Сферы жизни!');
-            }
-        }
-        
-        function buyHealthPotion() {
-            if (coins >= 150) {
-                coins -= 150;
-                inventory.push('Зелье здоровья');
-                addLog('Вы купили Зелье здоровья!');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки Зелья здоровья!');
-            }
-        }
-        
-        function buyRageOrb() {
-            if (coins >= 25) {
-                coins -= 25;
-                inventory.push('Сфера ярости');
-                addLog('Вы купили Сферу ярости!');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки Сферы ярости!');
-            }
-        }
-        
-        function buyPickaxe() {
-            if (coins >= 10) {
-                coins -= 10;
-                inventory.push('Кирка');
-                addLog('Вы купили кирку! Теперь вы можете добывать минералы.');
-                updateUI();
-            } else {
-                addLog('Недостаточно монет для покупки кирки!');
-            }
-        }
-        
-        // События кнопок
-        stepBtn.addEventListener('click', makeStep);
-        attackBtn.addEventListener('click', playerAttack);
-        defendBtn.addEventListener('click', playerDefend);
-        dodgeBtn.addEventListener('click', playerDodge);
-        swordBtn.addEventListener('click', buySword);
-        bowBtn.addEventListener('click', buyBow);
-        glovesBtn.addEventListener('click', buyGloves);
-        armorBtn.addEventListener('click', buyArmor);
-        healthBtn.addEventListener('click', buyHealthUpgrade);
-        lifeOrbBtn.addEventListener('click', buyLifeOrb);
-        healthPotionBtn.addEventListener('click', buyHealthPotion);
-        rageOrbBtn.addEventListener('click', buyRageOrb);
-        pickaxeBtn.addEventListener('click', buyPickaxe);
-        
-        // Инициализация игры
-        updateUI();
+        // Запускаем игру при загрузке страницы
+        window.onload = initGame;
     </script>
 </body>
 </html>
