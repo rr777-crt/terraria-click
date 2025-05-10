@@ -202,7 +202,6 @@
         
         <button id="refill-water">Пополнить воду (20₽)</button>
         <button id="show-inventory">Инвентарь</button>
-        <button id="sell-all">Продать всё</button>
         
         <div id="inventory-panel" style="display: none;">
             <h3>Ваш инвентарь</h3>
@@ -308,6 +307,14 @@
                 profit: 20000,
                 rarity: 1,
                 emoji: "🍈"
+            },
+            watermelon: {
+                name: "Арбуз",
+                price: 750,
+                growTime: 120,
+                profit: 1000,
+                rarity: 15,
+                emoji: "🍉"
             }
         };
         
@@ -513,36 +520,36 @@
                 // Сбор урожая
                 if (plot.plant) {
                     if (isBush(plot.plant)) {
-                        if (plot.harvestCount < plantProperties(plot.plant).maxHarvest && isGrown(plot)) {
-                            plot.harvestCount++;
-                            const profit = plot.hasEnergy ? plantProfit(plot.plant) * 3 : plantProfit(plot.plant);
-                            money += profit;
-                            addToInventory(plot.plant, profit, plot.hasEnergy);
-                            updateStats();
-                            showMessage(`Собрана ${plantName(plot.plant)}! +${profit}₽` + (plot.hasEnergy ? ' (энергия x3!)' : ''));
-                            
-                            // Убираем энергию после сбора
-                            if (plot.hasEnergy) {
-                                plot.hasEnergy = false;
-                                delete energyPlants[index];
+                        if (isGrown(plot)) {
+                            if (plot.harvestCount < plantProperties(plot.plant).maxHarvest) {
+                                plot.harvestCount++;
+                                const profit = plot.hasEnergy ? plantProfit(plot.plant) * 3 : plantProfit(plot.plant);
+                                addToInventory(plot.plant, profit, plot.hasEnergy);
+                                updateStats();
+                                showMessage(`Собрана ${plantName(plot.plant)}! +${profit}₽ добавлено в инвентарь` + (plot.hasEnergy ? ' (энергия x3!)' : ''));
+                                
+                                // Убираем энергию после сбора
+                                if (plot.hasEnergy) {
+                                    plot.hasEnergy = false;
+                                    delete energyPlants[index];
+                                }
+                                
+                                // Убираем растение после последнего сбора
+                                if (plot.harvestCount >= plantProperties(plot.plant).maxHarvest) {
+                                    setTimeout(() => resetPlot(plot), 1000);
+                                }
+                            } else {
+                                showMessage('Этот куст больше не даст урожая!');
                             }
-                            
-                            // Убираем растение после последнего сбора
-                            if (plot.harvestCount >= plantProperties(plot.plant).maxHarvest) {
-                                setTimeout(() => resetPlot(plot), 1000);
-                            }
-                        } else if (plot.harvestCount >= plantProperties(plot.plant).maxHarvest) {
-                            showMessage('Этот куст больше не даст урожая!');
                         } else {
                             showMessage('Растение еще не созрело!');
                         }
                     } else if (isGrown(plot)) {
                         const profit = plot.hasEnergy ? plantProfit(plot.plant) * 3 : plantProfit(plot.plant);
-                        money += profit;
                         addToInventory(plot.plant, profit, plot.hasEnergy);
                         resetPlot(plot);
                         updateStats();
-                        showMessage(`Урожай собран! +${profit}₽` + (plot.hasEnergy ? ' (энергия x3!)' : ''));
+                        showMessage(`Урожай ${plantName(plot.plant)} собран! +${profit}₽ добавлено в инвентарь` + (plot.hasEnergy ? ' (энергия x3!)' : ''));
                     } else {
                         showMessage('Растение еще не созрело!');
                     }
@@ -573,9 +580,8 @@
                             setTimeout(() => {
                                 const bonusCount = plantProperties(selectedItem).bonus;
                                 addToInventory(selectedItem, plantProfit(selectedItem) * bonusCount, false);
-                                money += plantProfit(selectedItem) * bonusCount;
                                 updateStats();
-                                showMessage(`Вы получили ${bonusCount} дополнительных кокоса!`);
+                                showMessage(`Вы получили ${bonusCount} дополнительных кокоса в инвентарь!`);
                             }, 1000);
                         }
                     } else {
@@ -652,116 +658,6 @@
             }
         }
         
-        // Продажа всего инвентаря
-        function sellAllInventory() {
-            let totalProfit = 0;
-            let itemsSold = 0;
-            
-            for (const plantType in playerInventory) {
-                totalProfit += playerInventory[plantType].totalProfit;
-                itemsSold += playerInventory[plantType].count;
-            }
-            
-            if (itemsSold > 0) {
-                money += totalProfit;
-                playerInventory = {};
-                updateStats();
-                updateInventoryDisplay();
-                
-                // Показываем результат продажи
-                document.getElementById('sell-result').textContent = `Вы продали все растения за ${totalProfit}₽ (${itemsSold} предметов)`;
-                document.getElementById('sell-modal').style.display = 'flex';
-            } else {
-                showMessage('В инвентаре ничего нет!');
-            }
-        }
-        
-        // Система сохранения игры
-        function saveGame() {
-            const gameData = {
-                money: money,
-                water: water,
-                shopItems: shopItems,
-                restockTimer: restockTimer,
-                playerInventory: playerInventory,
-                plots: plots.map(plot => ({
-                    plant: plot.plant,
-                    growth: plot.growth,
-                    growthStart: plot.growthStart ? plot.growthStart.getTime() : null,
-                    harvestCount: plot.harvestCount,
-                    hasEnergy: plot.hasEnergy
-                })),
-                energyPlants: energyPlants,
-                currentEvent: currentEvent,
-                eventTimer: eventTimer
-            };
-            localStorage.setItem('gardenGameSave', JSON.stringify(gameData));
-            showMessage('Игра сохранена!');
-        }
-        
-        function loadGame() {
-            const savedData = localStorage.getItem('gardenGameSave');
-            if (!savedData) return false;
-            
-            try {
-                const gameData = JSON.parse(savedData);
-                
-                money = gameData.money;
-                water = gameData.water;
-                shopItems = gameData.shopItems;
-                restockTimer = gameData.restockTimer;
-                playerInventory = gameData.playerInventory;
-                energyPlants = gameData.energyPlants || {};
-                currentEvent = gameData.currentEvent;
-                eventTimer = gameData.eventTimer;
-                
-                // Восстанавливаем грядки
-                gameData.plots.forEach((savedPlot, index) => {
-                    if (index >= plots.length) return;
-                    
-                    plots[index].plant = savedPlot.plant;
-                    plots[index].growth = savedPlot.growth;
-                    plots[index].growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
-                    plots[index].harvestCount = savedPlot.harvestCount;
-                    plots[index].hasEnergy = savedPlot.hasEnergy;
-                    
-                    // Перезапускаем таймер роста, если растение не выросло
-                    if (plots[index].plant && plots[index].growthStart && 
-                        !isGrown(plots[index])) {
-                        startGrowthTimer(plots[index]);
-                    }
-                    
-                    updatePlant(plots[index]);
-                });
-                
-                updateStats();
-                updateShopItems();
-                updateInventoryDisplay();
-                
-                // Восстанавливаем событие, если оно активно
-                if (currentEvent) {
-                    document.getElementById('event-indicator').className = currentEvent;
-                    if (currentEvent === 'rain') {
-                        document.getElementById('event-indicator').textContent = 
-                            'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
-                    } else if (currentEvent === 'storm') {
-                        document.getElementById('event-indicator').textContent = 
-                            'ГРОЗА: одно растение получит энергию!';
-                    }
-                }
-                
-                return true;
-            } catch (e) {
-                console.error('Ошибка загрузки сохранения:', e);
-                return false;
-            }
-        }
-        
-        function deleteSave() {
-            localStorage.removeItem('gardenGameSave');
-            showMessage('Сохранение удалено!');
-        }
-        
         // Обновление отображения количества товаров в магазине
         function updateShopItems() {
             document.querySelectorAll('.item').forEach(item => {
@@ -809,12 +705,12 @@
         
         // Проверка, является ли растение кустом
         function isBush(plantType) {
-            return plantProperties(plantType).isBush || false;
+            return plantProperties[plantType].isBush || false;
         }
         
         // Проверка, является ли растение постоянным
         function isPermanent(plantType) {
-            return plantProperties(plantType).isPermanent === false ? false : true;
+            return plantProperties[plantType].isPermanent === false ? false : true;
         }
         
         // Проверка, выросло ли растение
@@ -918,6 +814,92 @@
             document.getElementById('water-bar').style.width = `${water}%`;
         }
         
+        // Система сохранения игры
+        function saveGame() {
+            const gameData = {
+                money: money,
+                water: water,
+                shopItems: shopItems,
+                restockTimer: restockTimer,
+                playerInventory: playerInventory,
+                plots: plots.map(plot => ({
+                    plant: plot.plant,
+                    growth: plot.growth,
+                    growthStart: plot.growthStart ? plot.growthStart.getTime() : null,
+                    harvestCount: plot.harvestCount,
+                    hasEnergy: plot.hasEnergy
+                })),
+                energyPlants: energyPlants,
+                currentEvent: currentEvent,
+                eventTimer: eventTimer
+            };
+            localStorage.setItem('gardenGameSave', JSON.stringify(gameData));
+            showMessage('Игра сохранена!');
+        }
+        
+        function loadGame() {
+            const savedData = localStorage.getItem('gardenGameSave');
+            if (!savedData) return false;
+            
+            try {
+                const gameData = JSON.parse(savedData);
+                
+                money = gameData.money;
+                water = gameData.water;
+                shopItems = gameData.shopItems;
+                restockTimer = gameData.restockTimer;
+                playerInventory = gameData.playerInventory;
+                energyPlants = gameData.energyPlants || {};
+                currentEvent = gameData.currentEvent;
+                eventTimer = gameData.eventTimer;
+                
+                // Восстанавливаем грядки
+                gameData.plots.forEach((savedPlot, index) => {
+                    if (index >= plots.length) return;
+                    
+                    plots[index].plant = savedPlot.plant;
+                    plots[index].growth = savedPlot.growth;
+                    plots[index].growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
+                    plots[index].harvestCount = savedPlot.harvestCount;
+                    plots[index].hasEnergy = savedPlot.hasEnergy;
+                    
+                    // Перезапускаем таймер роста, если растение не выросло
+                    if (plots[index].plant && plots[index].growthStart && 
+                        !isGrown(plots[index])) {
+                        startGrowthTimer(plots[index]);
+                    }
+                    
+                    updatePlant(plots[index]);
+                });
+                
+                updateStats();
+                updateShopItems();
+                updateInventoryDisplay();
+                
+                // Восстанавливаем событие, если оно активно
+                if (currentEvent) {
+                    document.getElementById('event-indicator').className = currentEvent;
+                    if (currentEvent === 'rain') {
+                        document.getElementById('event-indicator').textContent = 
+                            'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
+                    } else if (currentEvent === 'storm') {
+                        document.getElementById('event-indicator').textContent = 
+                            'ГРОЗА: одно растение получит энергию!';
+                    }
+                }
+                
+                return true;
+            } catch (e) {
+                console.error('Ошибка загрузки сохранения:', e);
+                return false;
+            }
+        }
+        
+        function deleteSave() {
+            localStorage.removeItem('gardenGameSave');
+            showMessage('Сохранение удалено!');
+        }
+        
         // Пополнение воды
         document.getElementById('refill-water').addEventListener('click', function() {
             if (money >= 20) {
@@ -939,9 +921,6 @@
         document.getElementById('close-inventory').addEventListener('click', function() {
             document.getElementById('inventory-panel').style.display = 'none';
         });
-        
-        // Продажа всего инвентаря
-        document.getElementById('sell-all').addEventListener('click', sellAllInventory);
         
         // Закрытие модального окна
         document.getElementById('close-modal').addEventListener('click', function() {
@@ -977,6 +956,7 @@
         
         // Инициализация игры
         window.addEventListener('load', () => {
+            createGarden(); // Сначала создаем грядки
             if (loadGame()) {
                 showMessage('Сохранение загружено!');
             } else {
