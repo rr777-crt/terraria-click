@@ -1003,6 +1003,192 @@
                 initGame();
             }
         });
+// 1. Исправление сохранения магазина
+function saveGame() {
+    const gameData = {
+        money: money,
+        water: water,
+        shopItems: JSON.parse(JSON.stringify(shopItems)), // Глубокое копирование объекта shopItems
+        restockTimer: restockTimer,
+        playerInventory: playerInventory,
+        plots: plots.map(plot => ({
+            plant: plot.plant,
+            growth: plot.growth,
+            growthStart: plot.growthStart ? plot.growthStart.getTime() : null,
+            harvestCount: plot.harvestCount,
+            hasEnergy: plot.hasEnergy,
+            water: plot.water // Добавляем сохранение уровня полива
+        })),
+        energyPlants: energyPlants,
+        currentEvent: currentEvent,
+        eventTimer: eventTimer,
+        lastShopUpdate: Date.now() // Добавляем время последнего обновления магазина
+    };
+    localStorage.setItem('gardenGameSave', JSON.stringify(gameData));
+    showMessage('Игра сохранена!');
+}
+
+function loadGame() {
+    const savedData = localStorage.getItem('gardenGameSave');
+    if (!savedData) return false;
+    
+    try {
+        const gameData = JSON.parse(savedData);
+        
+        money = gameData.money;
+        water = gameData.water;
+        shopItems = gameData.shopItems;
+        restockTimer = gameData.restockTimer;
+        playerInventory = gameData.playerInventory;
+        energyPlants = gameData.energyPlants || {};
+        currentEvent = gameData.currentEvent;
+        eventTimer = gameData.eventTimer;
+        
+        // Восстанавливаем время до обновления магазина
+        if (gameData.lastShopUpdate) {
+            const timePassed = Math.floor((Date.now() - gameData.lastShopUpdate) / 1000);
+            restockTimer = Math.max(0, restockTimer - timePassed);
+        }
+        
+        // Восстанавливаем грядки
+        gameData.plots.forEach((savedPlot, index) => {
+            if (index >= plots.length) return;
+            
+            plots[index].plant = savedPlot.plant;
+            plots[index].growth = savedPlot.growth;
+            plots[index].growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
+            plots[index].harvestCount = savedPlot.harvestCount;
+            plots[index].hasEnergy = savedPlot.hasEnergy;
+            plots[index].water = savedPlot.water || 0; // Восстанавливаем уровень полива
+            
+            // Перезапускаем таймер роста, если растение не выросло
+            if (plots[index].plant && plots[index].growthStart && 
+                !isGrown(plots[index])) {
+                startGrowthTimer(plots[index]);
+            }
+            
+            updatePlant(plots[index]);
+        });
+        
+        // Восстанавливаем магазин
+        updateShopItems();
+        updateStats();
+        updateInventoryDisplay();
+        
+        // Восстанавливаем событие, если оно активно
+        if (currentEvent) {
+            document.getElementById('event-indicator').className = currentEvent;
+            if (currentEvent === 'rain') {
+                document.getElementById('event-indicator').textContent = 
+                    'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
+                // Ускоряем рост всех растений
+                plots.forEach(plot => {
+                    if (plot.plant && plot.growthStart) {
+                        plot.growthStart = new Date(plot.growthStart.getTime() - plantGrowTime(plot.plant) * 500);
+                    }
+                });
+            } else if (currentEvent === 'storm') {
+                document.getElementById('event-indicator').textContent = 
+                    'ГРОЗА: одно растение получит энергию!';
+            }
+        }
+        
+        return true;
+    } catch (e) {
+        console.error('Ошибка загрузки сохранения:', e);
+        return false;
+    }
+}
+
+// 2. Исправление бонуса от дождя (в функции handlePlotClick)
+if (selectedItem === 'water') {
+    // Полив
+    if (water >= 5 && plot.plant) {
+        water -= 5;
+        plot.water += 1; // Увеличиваем счетчик полива
+        if (plot.growthStart) {
+            const timeReduction = currentEvent === 'rain' ? 10000 : 5000; // Дождь дает двойной бонус
+            plot.growthStart = new Date(plot.growthStart.getTime() - timeReduction);
+            showMessage('Растение полито! -' + 
+                (currentEvent === 'rain' ? '10' : '5') + 
+                ' секунд к времени роста' + 
+                (currentEvent === 'rain' ? ' (дождь удваивает эффект!)' : ''));
+        }
+        updateStats();
+    } else if (!plot.plant) {
+        showMessage('Здесь нет растения для полива!');
+    } else {
+        showMessage('Недостаточно воды!');
+    }
+}
+
+// 3. Обновление функции triggerRandomEvent для правильного ускорения роста
+function triggerRandomEvent() {
+    const random = Math.random() * 100;
+    
+    // Завершаем предыдущее событие
+    if (currentEvent) {
+        document.getElementById('event-indicator').textContent = '';
+        document.getElementById('event-indicator').className = '';
+        
+        // Отменяем эффекты предыдущего события
+        if (currentEvent === 'rain') {
+            plots.forEach(plot => {
+                if (plot.plant && plot.growthStart) {
+                    // Возвращаем нормальную скорость роста
+                    plot.growthStart = new Date(plot.growthStart.getTime() + plantGrowTime(plot.plant) * 500);
+                }
+            });
+        }
+        
+        currentEvent = null;
+    }
+    
+    if (random < 70) {
+        // 70% - обычный день
+        showMessage('Сегодня обычный день');
+    } else if (random < 95) {
+        // 25% - дождь
+        currentEvent = 'rain';
+        document.getElementById('event-indicator').textContent = 'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
+        document.getElementById('event-indicator').className = 'rain';
+        showMessage('Пошёл дождь! Растения растут быстрее!');
+        
+        // Ускоряем рост всех растений
+        plots.forEach(plot => {
+            if (plot.plant && plot.growthStart) {
+                plot.growthStart = new Date(plot.growthStart.getTime() - plantGrowTime(plot.plant) * 500);
+            }
+        });
+    } else {
+        // 5% - гроза
+        currentEvent = 'storm';
+        document.getElementById('event-indicator').textContent = 'ГРОЗА: одно растение получит энергию!';
+        document.getElementById('event-indicator').className = 'storm';
+        showMessage('Началась гроза! Одно растение получит энергию!');
+        
+        // Выбираем случайное растение для энергии
+        const plantsWithIndex = plots.map((plot, index) => ({plot, index})).filter(p => p.plot.plant);
+        if (plantsWithIndex.length > 0) {
+            const randomPlant = plantsWithIndex[Math.floor(Math.random() * plantsWithIndex.length)];
+            randomPlant.plot.hasEnergy = true;
+            energyPlants[randomPlant.index] = true;
+            updatePlant(randomPlant.plot);
+            showMessage(`${plantName(randomPlant.plot.plant)} получил(а) энергию!`);
+        }
+    }
+}
+
+// 4. Обновление функции isGrown для учета полива
+function isGrown(plot) {
+    if (!plot.growthStart) return false;
+    const growTime = plantGrowTime(plot.plant) * 1000;
+    const now = new Date();
+    return now - plot.growthStart >= growTime;
+}
+
+// 5. Добавьте этот код в самом конце, перед закрывающим тегом </script>
+console.log("Все исправления применены!");
     </script>
 </body>
 </html>
