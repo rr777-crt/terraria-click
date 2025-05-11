@@ -75,6 +75,11 @@
             align-items: center;
             justify-content: center;
         }
+        .common { background-color: #a5d6a7; }
+        .rare { background-color: #90caf9; }
+        .epic { background-color: #ce93d8; }
+        .legendary { background-color: #ffb74d; }
+        .mythical { background-color: #ef9a9a; }
         #stats {
             margin-bottom: 20px;
             font-size: 18px;
@@ -180,6 +185,11 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+        .rarity-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -192,6 +202,14 @@
             <div class="progress-bar"><div id="water-bar" class="progress" style="width: 50%"></div></div>
             <p id="shop-restock">Магазин обновится через: <span id="restock-time">120</span> сек</p>
             <div id="event-indicator"></div>
+            <div class="rarity-info">
+                Редкость: 
+                <span style="color: #2e7d32">Обычная</span> | 
+                <span style="color: #1565c0">Редкая</span> | 
+                <span style="color: #6a1b9a">Эпическая</span> | 
+                <span style="color: #ef6c00">Легендарная</span> | 
+                <span style="color: #c62828">Мифическая</span>
+            </div>
         </div>
         
         <div id="inventory">
@@ -239,6 +257,15 @@
         let energyPlants = {};
         let plots = [];
         
+        // Система редкости
+        const RARITY = {
+            COMMON: { name: "Обычная", min: 3, max: 5, class: "common" },
+            RARE: { name: "Редкая", min: 2, max: 3, class: "rare" },
+            EPIC: { name: "Эпическая", min: 1, max: 2, class: "epic" },
+            LEGENDARY: { name: "Легендарная", min: 1, max: 1, class: "legendary" },
+            MYTHICAL: { name: "Мифическая", min: 1, max: 1, class: "mythical" }
+        };
+        
         // Данные о растениях
         const plantsData = {
             carrot: {
@@ -246,7 +273,7 @@
                 price: 10,
                 growTime: 19,
                 profit: 15,
-                rarity: 50,
+                rarity: RARITY.COMMON,
                 emoji: "🥕"
             },
             tomato: {
@@ -254,7 +281,7 @@
                 price: 20,
                 growTime: 30,
                 profit: 30,
-                rarity: 40,
+                rarity: RARITY.COMMON,
                 emoji: "🍅"
             },
             flower: {
@@ -262,7 +289,7 @@
                 price: 15,
                 growTime: 20,
                 profit: 25,
-                rarity: 45,
+                rarity: RARITY.COMMON,
                 emoji: "🌻"
             },
             strawberry: {
@@ -270,7 +297,7 @@
                 price: 25,
                 growTime: 10,
                 profit: 4,
-                rarity: 35,
+                rarity: RARITY.COMMON,
                 isBush: true,
                 maxHarvest: 2,
                 emoji: "🍓"
@@ -280,7 +307,7 @@
                 price: 250,
                 growTime: 35,
                 profit: 30,
-                rarity: 20,
+                rarity: RARITY.RARE,
                 emoji: "🎍"
             },
             pumpkin: {
@@ -288,7 +315,7 @@
                 price: 1000,
                 growTime: 200,
                 profit: 1250,
-                rarity: 10,
+                rarity: RARITY.EPIC,
                 emoji: "🎃"
             },
             coconut: {
@@ -296,7 +323,7 @@
                 price: 2000,
                 growTime: 50,
                 profit: 500,
-                rarity: 5,
+                rarity: RARITY.EPIC,
                 bonus: 2,
                 emoji: "🥥"
             },
@@ -305,7 +332,7 @@
                 price: 10000,
                 growTime: 1000,
                 profit: 20000,
-                rarity: 1,
+                rarity: RARITY.LEGENDARY,
                 emoji: "🍈"
             },
             watermelon: {
@@ -313,8 +340,24 @@
                 price: 750,
                 growTime: 120,
                 profit: 1000,
-                rarity: 15,
+                rarity: RARITY.RARE,
                 emoji: "🍉"
+            },
+            pear: {
+                name: "Груша",
+                price: 100,
+                growTime: 5,
+                profit: 125,
+                rarity: RARITY.RARE,
+                emoji: "🍐"
+            },
+            grapes: {
+                name: "Виноград",
+                price: 15000,
+                growTime: 1000,
+                profit: 30000,
+                rarity: RARITY.MYTHICAL,
+                emoji: "🍇"
             }
         };
         
@@ -367,11 +410,10 @@
             // Добавляем растения в зависимости от редкости
             availablePlants.forEach(plant => {
                 const rarity = plantsData[plant].rarity;
-                const maxCount = Math.max(1, Math.floor(rarity / 10));
-                const count = Math.floor(Math.random() * maxCount) + 1;
+                const count = Math.floor(Math.random() * (rarity.max - rarity.min + 1)) + rarity.min;
                 
                 shopItems[plant] = count;
-                addShopItem(plant, `${plantsData[plant].name} (${plantsData[plant].price}₽)`, count);
+                addShopItem(plant, `${plantsData[plant].name} (${plantsData[plant].price}₽)`, count, rarity.class);
             });
             
             // Запускаем таймер обновления магазина
@@ -390,10 +432,10 @@
         }
         
         // Добавление предмета в магазин
-        function addShopItem(type, name, count) {
+        function addShopItem(type, name, count, rarityClass) {
             const inventory = document.getElementById('inventory');
             const item = document.createElement('div');
-            item.className = 'item';
+            item.className = `item ${rarityClass || ''}`;
             item.dataset.type = type;
             item.textContent = name;
             
@@ -501,18 +543,16 @@
             
             if (selectedItem === 'water') {
                 // Полив
-                if (water >= 5 && plot.plant && !isPermanent(plot.plant)) {
+                if (water >= 5 && plot.plant) {
                     water -= 5;
                     if (plot.growthStart) {
                         const timeReduction = currentEvent === 'rain' ? 10000 : 5000;
                         plot.growthStart = new Date(plot.growthStart.getTime() - timeReduction);
+                        showMessage('Растение полито! -5 секунд к времени роста' + (currentEvent === 'rain' ? ' (дождь удваивает эффект!)' : ''));
                     }
                     updateStats();
-                    showMessage('Растение полито! -5 секунд к времени роста' + (currentEvent === 'rain' ? ' (дождь удваивает эффект!)' : ''));
                 } else if (!plot.plant) {
                     showMessage('Здесь нет растения для полива!');
-                } else if (isPermanent(plot.plant)) {
-                    showMessage('Это растение нельзя поливать!');
                 } else {
                     showMessage('Недостаточно воды!');
                 }
@@ -535,7 +575,7 @@
                                 }
                                 
                                 // Убираем растение после последнего сбора
-                                if (plot.harvestCount >= plantProperties(plot.plant).maxHarvest) {
+                                if (plot.harvestCount >= plantProperties[plot.plant].maxHarvest) {
                                     setTimeout(() => resetPlot(plot), 1000);
                                 }
                             } else {
@@ -705,12 +745,12 @@
         
         // Проверка, является ли растение кустом
         function isBush(plantType) {
-            return plantProperties[plantType].isBush || false;
+            return plantProperties(plantType).isBush || false;
         }
         
         // Проверка, является ли растение постоянным
         function isPermanent(plantType) {
-            return plantProperties[plantType].isPermanent === false ? false : true;
+            return plantProperties(plantType).isPermanent === false ? false : true;
         }
         
         // Проверка, выросло ли растение
