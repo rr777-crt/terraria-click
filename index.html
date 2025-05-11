@@ -1109,6 +1109,7 @@ function saveGame() {
     showMessage('Игра сохранена!');
 }
 
+// Исправленная функция загрузки игры
 function loadGame() {
     const savedData = localStorage.getItem('gardenGameSave');
     if (!savedData) return false;
@@ -1116,68 +1117,120 @@ function loadGame() {
     try {
         const gameData = JSON.parse(savedData);
         
-        money = gameData.money;
-        water = gameData.water;
-        shopItems = gameData.shopItems;
-        restockTimer = gameData.restockTimer;
-        playerInventory = gameData.playerInventory;
+        // Восстанавливаем основные данные
+        money = gameData.money || 100;
+        water = gameData.water || 50;
+        playerInventory = gameData.playerInventory || {};
         energyPlants = gameData.energyPlants || {};
         currentEvent = gameData.currentEvent;
-        eventTimer = gameData.eventTimer;
+        eventTimer = gameData.eventTimer || 100;
         
-        // Восстанавливаем время до обновления магазина
-        if (gameData.lastShopUpdate) {
-            const timePassed = Math.floor((Date.now() - gameData.lastShopUpdate) / 1000);
-            restockTimer = Math.max(0, restockTimer - timePassed);
+        // Важно: сначала восстанавливаем shopItems из сохранения
+        shopItems = gameData.shopItems || {};
+        
+        // Если в сохранении нет растений, инициализируем магазин
+        if (Object.keys(shopItems).length <= 2) { // только вода и сбор
+            initShop();
+        } else {
+            // Корректируем таймер магазина на основе прошедшего времени
+            if (gameData.lastUpdate) {
+                const timePassed = Math.floor((Date.now() - gameData.lastUpdate) / 1000);
+                restockTimer = Math.max(0, (gameData.restockTimer || 120) - timePassed);
+            } else {
+                restockTimer = gameData.restockTimer || 120;
+            }
+            
+            // Восстанавливаем магазин из сохранения
+            restoreShop();
         }
         
         // Восстанавливаем грядки
         gameData.plots.forEach((savedPlot, index) => {
             if (index >= plots.length) return;
             
-            plots[index].plant = savedPlot.plant;
-            plots[index].growth = savedPlot.growth;
-            plots[index].growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
-            plots[index].harvestCount = savedPlot.harvestCount;
-            plots[index].hasEnergy = savedPlot.hasEnergy;
-            plots[index].water = savedPlot.water || 0; // Восстанавливаем уровень полива
+            const plot = plots[index];
+            plot.plant = savedPlot.plant;
+            plot.growth = savedPlot.growth || 0;
+            plot.growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
+            plot.harvestCount = savedPlot.harvestCount || 0;
+            plot.hasEnergy = savedPlot.hasEnergy || false;
+            plot.water = savedPlot.water || 0;
             
-            // Перезапускаем таймер роста, если растение не выросло
-            if (plots[index].plant && plots[index].growthStart && 
-                !isGrown(plots[index])) {
-                startGrowthTimer(plots[index]);
+            if (plot.plant && plot.growthStart && !isGrown(plot)) {
+                startGrowthTimer(plot);
             }
             
-            updatePlant(plots[index]);
+            updatePlant(plot);
         });
         
-        // Восстанавливаем магазин
-        updateShopItems();
         updateStats();
         updateInventoryDisplay();
         
-        // Восстанавливаем событие, если оно активно
+        // Восстанавливаем активное событие
         if (currentEvent) {
             document.getElementById('event-indicator').className = currentEvent;
             if (currentEvent === 'rain') {
                 document.getElementById('event-indicator').textContent = 
                     'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
-                // Ускоряем рост всех растений
-                plots.forEach(plot => {
-                    if (plot.plant && plot.growthStart) {
-                        plot.growthStart = new Date(plot.growthStart.getTime() - plantGrowTime(plot.plant) * 500);
-                    }
-                });
             } else if (currentEvent === 'storm') {
                 document.getElementById('event-indicator').textContent = 
                     'ГРОЗА: одно растение получит энергию!';
             }
         }
         
+        // Перезапускаем таймеры
+        startTimers();
+        
         return true;
     } catch (e) {
         console.error('Ошибка загрузки сохранения:', e);
         return false;
+    }
+}
+
+// Улучшенная функция восстановления магазина
+function restoreShop() {
+    const inventory = document.getElementById('inventory');
+    inventory.innerHTML = '';
+    
+    // Всегда добавляем обязательные предметы
+    addShopItem('water', 'Полив (5₽)', -1);
+    addShopItem('harvest', 'Сбор', -1);
+    
+    // Добавляем растения из сохранения
+    for (const plantType in shopItems) {
+        // Пропускаем обязательные предметы
+        if (plantType === 'water' || plantType === 'harvest') continue;
+        
+        const plant = plantsData[plantType];
+        if (plant) {
+            addShopItem(
+                plantType,
+                `${plant.name} (${plant.price}₽)`,
+                shopItems[plantType],
+                plant.rarity.class
+            );
+        }
+    }
+    
+    // Если нет растений в магазине, добавляем несколько случайных
+    if (Object.keys(shopItems).length <= 2) {
+        const availablePlants = Object.keys(plantsData).filter(p => p !== 'water' && p !== 'harvest');
+        const plantsToAdd = Math.min(3, availablePlants.length);
+        
+        for (let i = 0; i < plantsToAdd; i++) {
+            const randomPlant = availablePlants[Math.floor(Math.random() * availablePlants.length)];
+            const rarity = plantsData[randomPlant].rarity;
+            const count = Math.floor(Math.random() * (rarity.max - rarity.min + 1)) + rarity.min;
+            
+            shopItems[randomPlant] = count;
+            addShopItem(
+                randomPlant,
+                `${plantsData[randomPlant].name} (${plantsData[randomPlant].price}₽)`,
+                count,
+                rarity.class
+            );
+        }
     }
 }
 
