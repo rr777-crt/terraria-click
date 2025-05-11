@@ -396,40 +396,45 @@
         
         // Инициализация магазина
         function initShop() {
-            // Очищаем инвентарь
-            document.getElementById('inventory').innerHTML = '';
-            
-            // Добавляем обязательные предметы (полив и сбор)
-            addShopItem('water', 'Полив (5₽)', -1);
-            addShopItem('harvest', 'Сбор', -1);
-            
-            // Генерируем случайные растения для магазина
-            shopItems = {};
-            const availablePlants = Object.keys(plantsData);
-            
-            // Добавляем растения в зависимости от редкости
-            availablePlants.forEach(plant => {
-                const rarity = plantsData[plant].rarity;
-                const count = Math.floor(Math.random() * (rarity.max - rarity.min + 1)) + rarity.min;
-                
-                shopItems[plant] = count;
-                addShopItem(plant, `${plantsData[plant].name} (${plantsData[plant].price}₽)`, count, rarity.class);
-            });
-            
-            // Запускаем таймер обновления магазина
-            if (restockInterval) clearInterval(restockInterval);
-            restockTimer = 120;
-            updateRestockTimer();
-            restockInterval = setInterval(() => {
-                restockTimer--;
-                updateRestockTimer();
-                
-                if (restockTimer <= 0) {
-                    initShop();
-                    showMessage('Магазин обновился!');
-                }
-            }, 1000);
+    // Очищаем отображение, но не данные
+    document.getElementById('inventory').innerHTML = '';
+    
+    // Добавляем обязательные предметы
+    addShopItem('water', 'Полив (5₽)', -1);
+    addShopItem('harvest', 'Сбор', -1);
+    
+    // Генерируем новые растения только если их нет
+    if (Object.keys(shopItems).length <= 2) { // только вода и сбор
+        const availablePlants = Object.keys(plantsData);
+        availablePlants.forEach(plant => {
+            const rarity = plantsData[plant].rarity;
+            const count = Math.floor(Math.random() * (rarity.max - rarity.min + 1)) + rarity.min;
+            shopItems[plant] = count;
+            addShopItem(plant, `${plantsData[plant].name} (${plantsData[plant].price}₽)`, count, rarity.class);
+        });
+    } else {
+        // Восстанавливаем существующие растения
+        for (const plant in shopItems) {
+            if (plant !== 'water' && plant !== 'harvest') {
+                addShopItem(plant, `${plantsData[plant].name} (${plantsData[plant].price}₽)`, shopItems[plant], plantsData[plant].rarity.class);
+            }
         }
+    }
+    
+    // Запускаем таймер обновления
+    if (restockInterval) clearInterval(restockInterval);
+    restockTimer = restockTimer || 120;
+    updateRestockTimer();
+    restockInterval = setInterval(() => {
+        restockTimer--;
+        updateRestockTimer();
+        
+        if (restockTimer <= 0) {
+            initShop();
+            showMessage('Магазин обновился!');
+        }
+    }, 1000);
+}
         
         // Добавление предмета в магазин
         function addShopItem(type, name, count, rarityClass) {
@@ -855,85 +860,131 @@
         }
         
         // Система сохранения игры
-        function saveGame() {
-            const gameData = {
-                money: money,
-                water: water,
-                shopItems: shopItems,
-                restockTimer: restockTimer,
-                playerInventory: playerInventory,
-                plots: plots.map(plot => ({
-                    plant: plot.plant,
-                    growth: plot.growth,
-                    growthStart: plot.growthStart ? plot.growthStart.getTime() : null,
-                    harvestCount: plot.harvestCount,
-                    hasEnergy: plot.hasEnergy
-                })),
-                energyPlants: energyPlants,
-                currentEvent: currentEvent,
-                eventTimer: eventTimer
-            };
-            localStorage.setItem('gardenGameSave', JSON.stringify(gameData));
-            showMessage('Игра сохранена!');
-        }
+        // Исправленная функция сохранения игры
+function saveGame() {
+    const gameData = {
+        money: money,
+        water: water,
+        shopItems: JSON.parse(JSON.stringify(shopItems)), // Глубокое копирование объекта shopItems
+        restockTimer: restockTimer,
+        playerInventory: playerInventory,
+        plots: plots.map(plot => ({
+            plant: plot.plant,
+            growth: plot.growth,
+            growthStart: plot.growthStart ? plot.growthStart.getTime() : null,
+            harvestCount: plot.harvestCount,
+            hasEnergy: plot.hasEnergy,
+            water: plot.water
+        })),
+        energyPlants: energyPlants,
+        currentEvent: currentEvent,
+        eventTimer: eventTimer,
+        lastShopUpdate: Date.now(), // Сохраняем время последнего обновления
+        plantsData: plantsData // Сохраняем данные о растениях
+    };
+    localStorage.setItem('gardenGameSave', JSON.stringify(gameData));
+    showMessage('Игра сохранена!');
+}
+
+// Исправленная функция загрузки игры
+function loadGame() {
+    const savedData = localStorage.getItem('gardenGameSave');
+    if (!savedData) return false;
+    
+    try {
+        const gameData = JSON.parse(savedData);
         
-        function loadGame() {
-            const savedData = localStorage.getItem('gardenGameSave');
-            if (!savedData) return false;
-            
-            try {
-                const gameData = JSON.parse(savedData);
-                
-                money = gameData.money;
-                water = gameData.water;
-                shopItems = gameData.shopItems;
-                restockTimer = gameData.restockTimer;
-                playerInventory = gameData.playerInventory;
-                energyPlants = gameData.energyPlants || {};
-                currentEvent = gameData.currentEvent;
-                eventTimer = gameData.eventTimer;
-                
-                // Восстанавливаем грядки
-                gameData.plots.forEach((savedPlot, index) => {
-                    if (index >= plots.length) return;
-                    
-                    plots[index].plant = savedPlot.plant;
-                    plots[index].growth = savedPlot.growth;
-                    plots[index].growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
-                    plots[index].harvestCount = savedPlot.harvestCount;
-                    plots[index].hasEnergy = savedPlot.hasEnergy;
-                    
-                    // Перезапускаем таймер роста, если растение не выросло
-                    if (plots[index].plant && plots[index].growthStart && 
-                        !isGrown(plots[index])) {
-                        startGrowthTimer(plots[index]);
-                    }
-                    
-                    updatePlant(plots[index]);
-                });
-                
-                updateStats();
-                updateShopItems();
-                updateInventoryDisplay();
-                
-                // Восстанавливаем событие, если оно активно
-                if (currentEvent) {
-                    document.getElementById('event-indicator').className = currentEvent;
-                    if (currentEvent === 'rain') {
-                        document.getElementById('event-indicator').textContent = 
-                            'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
-                    } else if (currentEvent === 'storm') {
-                        document.getElementById('event-indicator').textContent = 
-                            'ГРОЗА: одно растение получит энергию!';
-                    }
-                }
-                
-                return true;
-            } catch (e) {
-                console.error('Ошибка загрузки сохранения:', e);
-                return false;
+        // Восстанавливаем базовые данные
+        money = gameData.money;
+        water = gameData.water;
+        shopItems = gameData.shopItems || {};
+        restockTimer = gameData.restockTimer || 120;
+        playerInventory = gameData.playerInventory || {};
+        energyPlants = gameData.energyPlants || {};
+        currentEvent = gameData.currentEvent;
+        eventTimer = gameData.eventTimer || 100;
+        
+        // Восстанавливаем время до обновления магазина
+        if (gameData.lastShopUpdate) {
+            const timePassed = Math.floor((Date.now() - gameData.lastShopUpdate) / 1000);
+            restockTimer = Math.max(0, restockTimer - timePassed);
+            if (restockTimer <= 0) {
+                initShop(); // Если время вышло, обновляем магазин
             }
         }
+        
+        // Восстанавливаем грядки
+        gameData.plots.forEach((savedPlot, index) => {
+            if (index >= plots.length) return;
+            
+            plots[index].plant = savedPlot.plant;
+            plots[index].growth = savedPlot.growth;
+            plots[index].growthStart = savedPlot.growthStart ? new Date(savedPlot.growthStart) : null;
+            plots[index].harvestCount = savedPlot.harvestCount;
+            plots[index].hasEnergy = savedPlot.hasEnergy;
+            plots[index].water = savedPlot.water || 0;
+            
+            if (plots[index].plant && plots[index].growthStart && !isGrown(plots[index])) {
+                startGrowthTimer(plots[index]);
+            }
+            
+            updatePlant(plots[index]);
+        });
+        
+        // Восстанавливаем магазин
+        updateShopItems();
+        updateStats();
+        updateInventoryDisplay();
+        
+        // Восстанавливаем событие, если оно активно
+        if (currentEvent) {
+            document.getElementById('event-indicator').className = currentEvent;
+            if (currentEvent === 'rain') {
+                document.getElementById('event-indicator').textContent = 
+                    'ИДЁТ ДОЖДЬ: растения растут в 2 раза быстрее!';
+                // Ускоряем рост всех растений
+                plots.forEach(plot => {
+                    if (plot.plant && plot.growthStart) {
+                        plot.growthStart = new Date(plot.growthStart.getTime() - plantGrowTime(plot.plant) * 500);
+                    }
+                });
+            } else if (currentEvent === 'storm') {
+                document.getElementById('event-indicator').textContent = 
+                    'ГРОЗА: одно растение получит энергию!';
+            }
+        }
+        
+        // Запускаем таймеры магазина и событий
+        if (!restockInterval) {
+            restockInterval = setInterval(() => {
+                restockTimer--;
+                updateRestockTimer();
+                
+                if (restockTimer <= 0) {
+                    initShop();
+                    showMessage('Магазин обновился!');
+                }
+            }, 1000);
+        }
+        
+        if (!eventInterval) {
+            eventInterval = setInterval(() => {
+                eventTimer--;
+                updateEventTimer();
+                
+                if (eventTimer <= 0) {
+                    triggerRandomEvent();
+                    eventTimer = 100;
+                }
+            }, 1000);
+        }
+        
+        return true;
+    } catch (e) {
+        console.error('Ошибка загрузки сохранения:', e);
+        return false;
+    }
+}
         
         function deleteSave() {
             localStorage.removeItem('gardenGameSave');
